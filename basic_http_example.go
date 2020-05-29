@@ -8,7 +8,14 @@ import (
 )
 
 type helloWorldResponse struct {
-	Message string
+	Message string `json:"message"`
+	Author  string `json:"-"`
+
+	// 값이 비어있으면 출력안함
+	Date string `json:",omitempty"`
+
+	// 문자열 출력 + 이름을 id 로 바꿈
+	ID int `json:"id,string"`
 }
 
 func main() {
@@ -20,11 +27,8 @@ func main() {
 
 func helloworldHandler(w http.ResponseWriter, r *http.Request) {
 	res := helloWorldResponse{
-		"HelloWorld",
+		Message: "HelloWorld",
 	}
-	data, err := json.Marshal(res)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Fprint(w, string(data))
+	encoder := json.NewEncoder(w)
+	encoder.Encode(res)
 }
