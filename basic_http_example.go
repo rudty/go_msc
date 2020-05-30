@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
 )
 
 type helloWorldResponse struct {
@@ -20,6 +22,7 @@ type helloWorldResponse struct {
 
 func main() {
 	port := 8080
+	log.SetOutput(io.MultiWriter(os.Stdout, os.Stderr))
 	http.HandleFunc("/helloworld", helloworldHandler)
 	log.Printf("Server starting on port %v\n", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", port), nil))
