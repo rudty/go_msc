@@ -77,6 +77,11 @@ func TestRedisZRange(t *testing.T) {
 	fmt.Println(r)
 }
 
+func TestConnection(t *testing.T) {
+	client := redis.NewClient(&redis.Options{})
+	fmt.Println(client.Ping(backgroundContext))
+}
+
 func TestSlic(t *testing.T) {
 	a := make([]int, 10)
 	a[0] = 1
