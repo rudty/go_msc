@@ -35,3 +35,57 @@ func TestRedisSubscribe(t *testing.T) {
 		fmt.Println(msg)
 	}
 }
+
+func TestRedisHSet(t *testing.T) {
+	client := redis.NewClient(&redis.Options{})
+	client.HSet(backgroundContext, "user1", "email", "aa@aa.com")
+	client.HSet(backgroundContext, "user1", "lang", "ko")
+
+	m, err := client.HGetAll(backgroundContext, "user1").Result()
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	fmt.Println(m)
+
+	email, err := client.HGet(backgroundContext, "user1", "email").Result()
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(email)
+}
+
+func TestRedisZRange(t *testing.T) {
+	client := redis.NewClient(&redis.Options{})
+	client.ZAdd(backgroundContext, "myvalue", &redis.Z{
+		Member: "냐옹",
+		Score:  1,
+	})
+	client.ZAdd(backgroundContext, "myvalue", &redis.Z{
+		Member: 3,
+		Score:  2,
+	}, &redis.Z{
+		Member: "꿀꿀",
+		Score:  0,
+	})
+
+	r, err := client.ZRangeWithScores(backgroundContext, "myvalue", 0, -1).Result()
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(r)
+}
+
+func TestSlic(t *testing.T) {
+	a := make([]int, 10)
+	a[0] = 1
+	a[1] = 2
+	b := a[2:]
+	b[0] = 3
+	fmt.Println(a)
+	fmt.Println(b)
+	fmt.Println(cap(a))
+	fmt.Println(cap(b))
+
+}
