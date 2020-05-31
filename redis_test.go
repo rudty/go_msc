@@ -10,6 +10,8 @@ import (
 
 // redis-cli config get dir
 // redis db 저장 경로 확인
+// config.conf 복사 save ""
+// redis-server inmemory.conf
 var backgroundContext = context.Background()
 
 func TestRedis(t *testing.T) {
