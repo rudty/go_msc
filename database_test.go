@@ -25,3 +25,12 @@ func TestDbSelect(t *testing.T) {
 	log.Println(rows)
 	log.Println(err)
 }
+
+func TestService(t *testing.T) {
+	h := helloService{}
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Println(h.hello(tx))
+}
