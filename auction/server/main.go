@@ -9,7 +9,7 @@ import (
 )
 
 func newRPCServer() {
-	auctionServer := new(AuctionServer)
+	auctionServer := NewAuctionServer()
 	rpc.Register(auctionServer)
 	// rpc.HandleHTTP()
 	l, err := net.Listen("tcp", ":1234")
@@ -25,7 +25,7 @@ func newRPCClient() {
 	if err != nil {
 		log.Fatal("dial error", err)
 	}
-	item := AuctionItem{
+	item := AuctionRegisterItemRequest{
 		ItemID:   1,
 		BidPrice: 5,
 	}
