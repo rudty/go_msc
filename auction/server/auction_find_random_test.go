@@ -25,3 +25,14 @@ func TestFindRandomItem(t *testing.T) {
 		t.Fatal("length == 2")
 	}
 }
+
+func TestFindRandomEmptyItem(t *testing.T) {
+	s := NewAuctionServer()
+	res := AuctionItemResponse{}
+	if err := s.FindRandomItems(&FindRandomItemRequest{Count: 2}, &res); err != nil {
+		t.Fatal(err)
+	}
+	if len(res.Items) != 0 {
+		t.Fatal("size == 0")
+	}
+}

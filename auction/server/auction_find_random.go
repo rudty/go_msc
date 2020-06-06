@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"math/rand"
 )
 
@@ -26,7 +25,7 @@ func minInt(a, b int) int {
 func (a *AuctionServer) FindRandomItems(req *FindRandomItemRequest, res *AuctionItemResponse) error {
 
 	if len(a.pkAuctionIDItems) == 0 {
-		return errors.New("empty")
+		return nil
 	}
 
 	a.lock.RLock()
