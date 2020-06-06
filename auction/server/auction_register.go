@@ -25,7 +25,12 @@ func (a *AuctionServer) RegisterItem(req *AuctionRegisterItemRequest, res *Uniqu
 	defer a.lock.Unlock()
 
 	a.pkAuctionIDItems[newAuctionID] = newAuctionItem
-	a.indexItemIDitems[req.ItemID] = append(a.indexItemIDitems[req.ItemID], newAuctionItem)
-
+	m, ok := a.indexItemIDitems[req.ItemID]
+	if !ok {
+		m = make(map[UniqueID]*AuctionItem)
+		a.indexItemIDitems[req.ItemID] = m
+	}
+	m[newAuctionID] = newAuctionItem
+	a.indexExpireTime.PushBack(newAuctionItem)
 	return nil
 }
