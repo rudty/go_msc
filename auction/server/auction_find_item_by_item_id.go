@@ -7,7 +7,7 @@ type FindItemByItemIDRequest struct {
 }
 
 // FindItemByItemID 아이템 아이디에 해당하는
-func (a *AuctionServer) FindItemByItemID(req *FindItemByItemIDRequest, res *AuctionItemResponse) error {
+func (a *AuctionSevice) FindItemByItemID(req *FindItemByItemIDRequest, res *AuctionItemResponse) error {
 	if m, ok := a.indexItemIDitems[req.ItemID]; ok {
 		a.lock.RLock()
 		defer a.lock.RUnlock()

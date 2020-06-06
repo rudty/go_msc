@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func registerItemPrice30(s *AuctionServer) UniqueID {
+func registerItemPrice30(s *AuctionSevice) UniqueID {
 	var auctionID UniqueID
 	if err := s.RegisterItem(&AuctionRegisterItemRequest{
 		ItemID:   ItemID(1),
@@ -16,7 +16,7 @@ func registerItemPrice30(s *AuctionServer) UniqueID {
 }
 
 func TestBidOK(t *testing.T) {
-	s := NewAuctionServer()
+	s := NewAuctionService()
 	auctionID := registerItemPrice30(s)
 	var res bool
 	s.Bid(&BidRequest{
@@ -31,7 +31,7 @@ func TestBidOK(t *testing.T) {
 }
 
 func TestBidFail30(t *testing.T) {
-	s := NewAuctionServer()
+	s := NewAuctionService()
 	auctionID := registerItemPrice30(s)
 	var res bool
 	s.Bid(&BidRequest{
@@ -46,7 +46,7 @@ func TestBidFail30(t *testing.T) {
 }
 
 func TestBidFailNotItem(t *testing.T) {
-	s := NewAuctionServer()
+	s := NewAuctionService()
 	var res bool
 	s.Bid(&BidRequest{
 		UserID:    "a",

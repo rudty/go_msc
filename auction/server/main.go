@@ -9,8 +9,8 @@ import (
 )
 
 func newRPCServer() {
-	auctionServer := NewAuctionServer()
-	rpc.Register(auctionServer)
+	auctionService := NewAuctionService()
+	rpc.Register(auctionService)
 	// rpc.HandleHTTP()
 	l, err := net.Listen("tcp", ":1234")
 	if err != nil {

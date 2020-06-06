@@ -5,13 +5,13 @@ import (
 	"time"
 )
 
-func getFirstExpireItem(a *AuctionServer) *AuctionItem {
+func getFirstExpireItem(a *AuctionSevice) *AuctionItem {
 	a.lock.RLock()
 	defer a.lock.RUnlock()
 	return a.indexExpireTime.Front().Value.(*AuctionItem)
 }
 
-func handleExpire(a *AuctionServer) {
+func handleExpire(a *AuctionSevice) {
 	for {
 		if a.indexExpireTime.Len() > 0 {
 			nowSec := time.Now().Unix()
@@ -30,13 +30,13 @@ func handleExpire(a *AuctionServer) {
 	}
 }
 
-func onExpireItem(a *AuctionServer, item *AuctionItem) {
+func onExpireItem(a *AuctionSevice, item *AuctionItem) {
 	// 여기서 만료되는 아이템을 사용한 사람이 있다면 전달
 	if item.BidUserID != nil {
 		fmt.Println(item)
 	}
 }
 
-func startExpire(a *AuctionServer) {
+func startExpire(a *AuctionSevice) {
 	go handleExpire(a)
 }

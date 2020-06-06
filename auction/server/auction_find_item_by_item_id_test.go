@@ -5,7 +5,7 @@ import (
 )
 
 func TestFindByItemID(t *testing.T) {
-	s := NewAuctionServer()
+	s := NewAuctionService()
 	var ignore UniqueID
 	for i := 0; i < 100; i++ {
 		if err := s.RegisterItem(&AuctionRegisterItemRequest{
@@ -28,7 +28,7 @@ func TestFindByItemID(t *testing.T) {
 }
 
 func TestFindByItemIDEmptyResult(t *testing.T) {
-	s := NewAuctionServer()
+	s := NewAuctionService()
 	res := AuctionItemResponse{}
 	s.FindItemByItemID(&FindItemByItemIDRequest{
 		ItemID: 1,

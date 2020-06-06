@@ -26,17 +26,17 @@ func (a *AuctionItem) String() string {
 		a.ExpireTime)
 }
 
-// AuctionServer 경매 서버
-type AuctionServer struct {
+// AuctionSevice 경매 서버
+type AuctionSevice struct {
 	lock             sync.RWMutex
 	pkAuctionIDItems map[UniqueID]*AuctionItem
 	indexItemIDitems map[ItemID]map[UniqueID]*AuctionItem
 	indexExpireTime  *list.List
 }
 
-// NewAuctionServer 새로운 경매 서버를 만듭니다.
-func NewAuctionServer() *AuctionServer {
-	a := &AuctionServer{
+// NewAuctionService 새로운 경매 서버를 만듭니다.
+func NewAuctionService() *AuctionSevice {
+	a := &AuctionSevice{
 		pkAuctionIDItems: make(map[UniqueID]*AuctionItem),
 		indexItemIDitems: make(map[ItemID]map[UniqueID]*AuctionItem),
 		indexExpireTime:  list.New(),
@@ -45,7 +45,7 @@ func NewAuctionServer() *AuctionServer {
 	return a
 }
 
-func (a *AuctionServer) findItemByUniqueID(id UniqueID) *AuctionItem {
+func (a *AuctionSevice) findItemByUniqueID(id UniqueID) *AuctionItem {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 	if e, ok := a.pkAuctionIDItems[id]; ok {

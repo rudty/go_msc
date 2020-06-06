@@ -22,7 +22,7 @@ func minInt(a, b int) int {
 }
 
 // FindRandomItems 맨 처음에 보여주는 용도로 랜덤한 아이템 몇개를 가져옵니다.
-func (a *AuctionServer) FindRandomItems(req *FindRandomItemRequest, res *AuctionItemResponse) error {
+func (a *AuctionSevice) FindRandomItems(req *FindRandomItemRequest, res *AuctionItemResponse) error {
 
 	if len(a.pkAuctionIDItems) == 0 {
 		return nil

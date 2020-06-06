@@ -9,7 +9,7 @@ type AuctionRegisterItemRequest struct {
 }
 
 // RegisterItem 새로운 아이템을 반환합니다. 반환: 새로운 아이템의 AuctionID
-func (a *AuctionServer) RegisterItem(req *AuctionRegisterItemRequest, res *UniqueID) error {
+func (a *AuctionSevice) RegisterItem(req *AuctionRegisterItemRequest, res *UniqueID) error {
 	newAuctionID := getAuctionID()
 	expireTime := time.Now().Unix() + 3600
 	newAuctionItem := &AuctionItem{

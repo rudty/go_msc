@@ -9,7 +9,7 @@ type BidRequest struct {
 }
 
 // Bid 아이템에 대해서 입찰을 요청합니다.
-func (a *AuctionServer) Bid(req *BidRequest, res *bool) {
+func (a *AuctionSevice) Bid(req *BidRequest, res *bool) {
 	*res = false
 	item := a.findItemByUniqueID(req.AuctionID)
 	if item == nil {

@@ -5,7 +5,7 @@ import (
 )
 
 func TestFindRandomItem(t *testing.T) {
-	s := NewAuctionServer()
+	s := NewAuctionService()
 	var ignore UniqueID
 	for i := 0; i < 100; i++ {
 		if err := s.RegisterItem(&AuctionRegisterItemRequest{
@@ -27,7 +27,7 @@ func TestFindRandomItem(t *testing.T) {
 }
 
 func TestFindRandomEmptyItem(t *testing.T) {
-	s := NewAuctionServer()
+	s := NewAuctionService()
 	res := AuctionItemResponse{}
 	if err := s.FindRandomItems(&FindRandomItemRequest{Count: 2}, &res); err != nil {
 		t.Fatal(err)
