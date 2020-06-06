@@ -36,11 +36,13 @@ type AuctionServer struct {
 
 // NewAuctionServer 새로운 경매 서버를 만듭니다.
 func NewAuctionServer() *AuctionServer {
-	return &AuctionServer{
+	a := &AuctionServer{
 		pkAuctionIDItems: make(map[UniqueID]*AuctionItem),
 		indexItemIDitems: make(map[ItemID]map[UniqueID]*AuctionItem),
 		indexExpireTime:  list.New(),
 	}
+	handleExpire(a)
+	return a
 }
 
 func (a *AuctionServer) findItemByUniqueID(id UniqueID) *AuctionItem {
