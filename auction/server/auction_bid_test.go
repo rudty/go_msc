@@ -58,3 +58,24 @@ func TestBidFailNotItem(t *testing.T) {
 		t.Fatal("must fail")
 	}
 }
+
+func TestBidUserChange(t *testing.T) {
+	s := NewAuctionService()
+	auctionID := registerItemPrice30(s)
+	var res bool
+	if err := s.Bid(&BidRequest{
+		UserID:    "a",
+		Price:     31,
+		AuctionID: auctionID,
+	}, &res); err != nil {
+		t.Error(err)
+	}
+
+	if err := s.Bid(&BidRequest{
+		UserID:    "b",
+		Price:     32,
+		AuctionID: auctionID,
+	}, &res); err != nil {
+		t.Error(err)
+	}
+}
