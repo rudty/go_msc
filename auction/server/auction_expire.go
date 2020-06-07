@@ -10,7 +10,7 @@ func getExpireItems(a *AuctionSevice, nowSec int64) ([]*AuctionItem, error) {
 	defer a.lock.RUnlock()
 
 	rows, err := a.db.Query(
-		"select AuctionID, ItemID, BidPrice, ExpireTime, BidUserID from AuctionItem where ExpireTime < ?",
+		selectAuctionWhereExpire,
 		nowSec,
 	)
 
@@ -51,29 +51,32 @@ func removeExpireItems(a *AuctionSevice, nowSec int64) error {
 	return nil
 }
 
-func handleExpire(a *AuctionSevice) {
-	for {
-		time.Sleep(1 * time.Second)
-		nowSec := time.Now().Unix()
-		expireItems, err := getExpireItems(a, nowSec)
-		if err != nil {
-			log.Println("expireItem error: ", err)
-			continue
-		}
+func handleExpire(a *AuctionSevice) int {
+	nowSec := time.Now().Unix()
+	expireItems, err := getExpireItems(a, nowSec)
+	if err != nil {
+		log.Println("expireItem error: ", err)
+		return 0
+	}
 
-		if err := removeExpireItems(a, nowSec); err != nil {
-			log.Println("remove expireItem error: ", err)
-			continue
-		}
+	if err := removeExpireItems(a, nowSec); err != nil {
+		log.Println("remove expireItem error: ", err)
+		return 0
+	}
 
-		for _, e := range expireItems {
-			if len(e.BidUserID) > 0 {
-				log.Println(e.BidUserID + " get item")
-			}
+	for _, e := range expireItems {
+		if len(e.BidUserID) > 0 {
+			log.Println(e.BidUserID + " get item")
 		}
 	}
+	return len(expireItems)
 }
 
 func startExpire(a *AuctionSevice) {
-	go handleExpire(a)
+	go func() {
+		for {
+			time.Sleep(1 * time.Second)
+			handleExpire(a)
+		}
+	}()
 }

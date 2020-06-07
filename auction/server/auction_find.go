@@ -23,7 +23,7 @@ func (a *AuctionSevice) FindRandomItems(req *FindRandomItemRequest, res *Auction
 	defer a.lock.RUnlock()
 
 	rows, err := a.db.Query(
-		"select AuctionID, ItemID, BidPrice, ExpireTime, BidUserID from AuctionItem order by random() limit ?;",
+		selectAuctionOrderByRandomLimitX,
 		req.Count)
 	if rows != nil {
 		defer rows.Close()
@@ -59,7 +59,7 @@ func (a *AuctionSevice) FindItemByItemID(req *FindItemByItemIDRequest, res *Auct
 	defer a.lock.RUnlock()
 
 	rows, err := a.db.Query(
-		"select AuctionID, ItemID, BidPrice, ExpireTime, BidUserID from AuctionItem where ItemID = ? limit ?;",
+		selectAuctionWhereItemIDLimitX,
 		req.ItemID,
 		req.Count,
 	)
