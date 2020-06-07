@@ -12,25 +12,18 @@ type AuctionRegisterItemRequest struct {
 func (a *AuctionSevice) RegisterItem(req *AuctionRegisterItemRequest, res *UniqueID) error {
 	newAuctionID := getAuctionID()
 	expireTime := time.Now().Unix() + 3600
-	newAuctionItem := &AuctionItem{
-		ItemID:     req.ItemID,
-		BidPrice:   req.BidPrice,
-		ExpireTime: expireTime,
-		AuctionID:  newAuctionID,
-	}
-
 	*res = newAuctionID
 
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
-	a.pkAuctionIDItems[newAuctionID] = newAuctionItem
-	m, ok := a.indexItemIDitems[req.ItemID]
-	if !ok {
-		m = make(map[UniqueID]*AuctionItem)
-		a.indexItemIDitems[req.ItemID] = m
+	if _, err := a.db.Exec("insert into AuctionItem values(?,?,?,?,'');",
+		newAuctionID,
+		req.ItemID,
+		req.BidPrice,
+		expireTime,
+	); err != nil {
+		return err
 	}
-	m[newAuctionID] = newAuctionItem
-	a.indexExpireTime.PushBack(newAuctionItem)
 	return nil
 }

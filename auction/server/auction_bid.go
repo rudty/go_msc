@@ -9,14 +9,27 @@ type BidRequest struct {
 }
 
 // Bid 아이템에 대해서 입찰을 요청합니다.
-func (a *AuctionSevice) Bid(req *BidRequest, res *bool) {
+func (a *AuctionSevice) Bid(req *BidRequest, res *bool) error {
 	*res = false
-	item := a.findItemByUniqueID(req.AuctionID)
-	if item == nil {
-		return
+	r, err := a.db.Exec(
+		"update AuctionItem set BidPrice = ?, BidUserID = ? where AuctionID = ? and BidPrice < ?;",
+		req.Price,
+		req.UserID,
+		req.AuctionID,
+		req.Price)
+
+	if err != nil {
+		return err
 	}
-	if req.Price > item.BidPrice {
-		item.BidUserID = &req.UserID
+
+	modifiedCount, err := r.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if modifiedCount == 1 {
 		*res = true
 	}
+
+	return nil
 }

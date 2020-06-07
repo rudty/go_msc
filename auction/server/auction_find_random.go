@@ -1,9 +1,5 @@
 package main
 
-import (
-	"math/rand"
-)
-
 // FindRandomItemRequest 랜덤 하게 아이템을 가져오는 요청
 type FindRandomItemRequest struct {
 	Count int16
@@ -23,32 +19,30 @@ func minInt(a, b int) int {
 
 // FindRandomItems 맨 처음에 보여주는 용도로 랜덤한 아이템 몇개를 가져옵니다.
 func (a *AuctionSevice) FindRandomItems(req *FindRandomItemRequest, res *AuctionItemResponse) error {
-
-	if len(a.pkAuctionIDItems) == 0 {
-		return nil
-	}
-
 	a.lock.RLock()
 	defer a.lock.RUnlock()
 
-	auctionItemCount := len(a.pkAuctionIDItems)
-	extractCount := minInt(int(req.Count), auctionItemCount)
-	extractIndexes := make([]int, extractCount)
-	for i := 0; i < extractCount; i++ {
-		extractIndexes[i] = rand.Intn(auctionItemCount)
+	rows, err := a.db.Query(
+		"select AuctionID, ItemID, BidPrice, ExpireTime, BidUserID from AuctionItem order by random() limit ?;",
+		req.Count)
+	if rows != nil {
+		defer rows.Close()
 	}
 
-	auctionIt := 0
-	extractIt := 0
-	for _, v := range a.pkAuctionIDItems {
-		if auctionIt == extractIndexes[extractIt] {
-			res.Items = append(res.Items, v)
-			extractIt++
-			if extractIt == extractCount {
-				break
-			}
-		}
-		auctionIt++
+	if err != nil {
+		return err
 	}
+
+	for rows.Next() {
+		if rows.Err() != nil {
+			return rows.Err()
+		}
+		e := AuctionItem{}
+		if err := e.ReadFromSQL(rows); err != nil {
+			return err
+		}
+		res.Items = append(res.Items, &e)
+	}
+
 	return nil
 }

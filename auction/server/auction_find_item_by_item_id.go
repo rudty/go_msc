@@ -8,19 +8,31 @@ type FindItemByItemIDRequest struct {
 
 // FindItemByItemID 아이템 아이디에 해당하는
 func (a *AuctionSevice) FindItemByItemID(req *FindItemByItemIDRequest, res *AuctionItemResponse) error {
-	if m, ok := a.indexItemIDitems[req.ItemID]; ok {
-		a.lock.RLock()
-		defer a.lock.RUnlock()
+	a.lock.RLock()
+	defer a.lock.RUnlock()
 
-		count := minInt(int(req.Count), len(m))
-		it := 0
-		for _, e := range m {
-			res.Items = append(res.Items, e)
-			it++
-			if it == count {
-				break
-			}
-		}
+	rows, err := a.db.Query(
+		"select AuctionID, ItemID, BidPrice, ExpireTime, BidUserID from AuctionItem where ItemID = ? limit ?;",
+		req.ItemID,
+		req.Count,
+	)
+
+	if rows != nil {
+		defer rows.Close()
 	}
+
+	if err != nil {
+		return err
+	}
+
+	for rows.Next() {
+		e := AuctionItem{}
+		if rows.Err() != nil {
+			return rows.Err()
+		}
+		e.ReadFromSQL(rows)
+		res.Items = append(res.Items, &e)
+	}
+
 	return nil
 }
