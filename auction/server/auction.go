@@ -79,6 +79,7 @@ func createInMemoryAuctionTable() *sql.DB {
 func NewAuctionService() *AuctionSevice {
 	a := &AuctionSevice{}
 	a.db = createInMemoryAuctionTable()
+	startExpire(a)
 	return a
 }
 
