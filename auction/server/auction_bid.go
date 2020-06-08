@@ -45,8 +45,8 @@ func (a *AuctionSevice) Bid(req *BidRequest, res *BidResponse) error {
 		return err
 	}
 
-	if item.BidPrice > req.Price {
-		return errors.New("item.BidPrice > req.Price")
+	if item.BidPrice >= req.Price {
+		return errors.New("item.BidPrice >= req.Price")
 	}
 
 	res.OldPrice = item.BidPrice
