@@ -81,17 +81,3 @@ func NewAuctionService() *AuctionSevice {
 	a.db = createInMemoryAuctionTable()
 	return a
 }
-
-func (a *AuctionSevice) findItemByUniqueID(id UniqueID) *AuctionItem {
-	a.lock.Lock()
-	defer a.lock.Unlock()
-	row := a.db.QueryRow("select AuctionID, ItemID, BidPrice, ExpireTime, BidUserID from AuctionItem where AuctionID = ? limit 1;", id)
-	if row == nil {
-		return nil
-	}
-	auctionItem := AuctionItem{}
-	if err := auctionItem.ReadFromSQL(row); err != nil {
-		return nil
-	}
-	return &auctionItem
-}

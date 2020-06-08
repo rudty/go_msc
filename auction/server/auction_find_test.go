@@ -72,3 +72,12 @@ func TestFindByItemIDEmptyResult(t *testing.T) {
 		t.Error("must 0")
 	}
 }
+
+func TestFindById(t *testing.T) {
+	s := NewAuctionService()
+	var req UniqueID = 9912
+	var res = AuctionItem{}
+	if err := s.FindItemByAuctionID(&req, &res); err == nil {
+		t.Error("must not found")
+	}
+}

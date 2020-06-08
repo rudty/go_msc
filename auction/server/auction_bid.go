@@ -1,9 +1,7 @@
 package main
 
 import (
-	"database/sql"
 	"errors"
-	"fmt"
 	"log"
 )
 
@@ -24,33 +22,6 @@ type BidResponse struct {
 
 	OldUserID string
 	OldPrice  int64
-}
-
-func findAuctionItemByAuctionID(tx *sql.Tx, auctionID UniqueID) (*AuctionItem, error) {
-	rows, err := tx.Query(selectAuctionWhereAuctionID, auctionID)
-
-	if rows != nil {
-		defer rows.Close()
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	if !rows.Next() {
-		return nil, errors.New(fmt.Sprint("cannot found auctionID", auctionID))
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	item := AuctionItem{}
-	if err := item.ReadFromSQL(rows); err != nil {
-		return nil, err
-	}
-
-	return &item, nil
 }
 
 // Bid 아이템에 대해서 입찰을 요청합니다.
