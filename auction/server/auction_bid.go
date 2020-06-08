@@ -55,7 +55,7 @@ func (a *AuctionSevice) Bid(req *BidRequest, res *BidResponse) error {
 	log.Println(item, res)
 
 	if _, err := tx.Exec(
-		updateBidPriceAndBidUserIDWhereAuctionID,
+		"update AuctionItem set BidPrice = ?, BidUserID = ? where AuctionID = ?;",
 		req.Price,
 		req.UserID,
 		req.AuctionID); err != nil {
