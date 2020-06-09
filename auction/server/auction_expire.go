@@ -22,20 +22,9 @@ func getExpireItems(a *AuctionSevice, nowSec int64) ([]*AuctionItem, error) {
 		return nil, err
 	}
 
-	expireItems := make([]*AuctionItem, 0, 10)
-
-	for rows.Next() {
-		if rows.Err() != nil {
-			return nil, rows.Err()
-		}
-
-		e := AuctionItem{}
-
-		if err := e.ReadFromSQL(rows); err != nil {
-			return nil, err
-		}
-
-		expireItems = append(expireItems, &e)
+	expireItems, err := NewAuctionItemListFromSQLRows(rows)
+	if err != nil {
+		return nil, err
 	}
 
 	return expireItems, nil

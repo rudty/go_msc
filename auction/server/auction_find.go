@@ -16,13 +16,6 @@ type AuctionItemResponse struct {
 	Items []*AuctionItem
 }
 
-func minInt(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 // FindRandomItems 맨 처음에 보여주는 용도로 랜덤한 아이템 몇개를 가져옵니다.
 func (a *AuctionSevice) FindRandomItems(req *FindRandomItemRequest, res *AuctionItemResponse) error {
 	a.lock.RLock()
@@ -39,15 +32,9 @@ func (a *AuctionSevice) FindRandomItems(req *FindRandomItemRequest, res *Auction
 		return err
 	}
 
-	for rows.Next() {
-		if rows.Err() != nil {
-			return rows.Err()
-		}
-		e := AuctionItem{}
-		if err := e.ReadFromSQL(rows); err != nil {
-			return err
-		}
-		res.Items = append(res.Items, &e)
+	res.Items, err = NewAuctionItemListFromSQLRows(rows)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -78,13 +65,9 @@ func (a *AuctionSevice) FindItemByItemID(req *FindItemByItemIDRequest, res *Auct
 		return err
 	}
 
-	for rows.Next() {
-		e := AuctionItem{}
-		if rows.Err() != nil {
-			return rows.Err()
-		}
-		e.ReadFromSQL(rows)
-		res.Items = append(res.Items, &e)
+	res.Items, err = NewAuctionItemListFromSQLRows(rows)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -129,10 +112,10 @@ func findAuctionItemByAuctionID(tx *sql.Tx, auctionID UniqueID) (*AuctionItem, e
 		return nil, err
 	}
 
-	item := AuctionItem{}
-	if err := item.ReadFromSQL(rows); err != nil {
+	item, err := NewAuctionItemFromSQLRow(rows)
+	if err != nil {
 		return nil, err
 	}
 
-	return &item, nil
+	return item, nil
 }

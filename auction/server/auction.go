@@ -26,18 +26,50 @@ type SQLRowScannable interface {
 	Scan(dest ...interface{}) error
 }
 
-// ReadFromSQL scan interface 로부터 값을 읽습니다.
-func (a *AuctionItem) ReadFromSQL(s SQLRowScannable) error {
-	if err := s.Scan(
+// SQLRowsScannable []AuctionItem을 SQL로부터 읽을수 있게 하는 공용 인터페이스
+type SQLRowsScannable interface {
+	SQLRowScannable
+	Next() bool
+	Err() error
+}
+
+// NewAuctionItemFromSQLRow SQL을 scan하여 AuctionItem을 반환합니다.
+func NewAuctionItemFromSQLRow(row SQLRowScannable) (*AuctionItem, error) {
+	a := AuctionItem{}
+	if err := row.Scan(
 		&a.AuctionID,
 		&a.ItemID,
 		&a.BidPrice,
 		&a.ExpireTime,
 		&a.BidUserID,
 	); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return &a, nil
+}
+
+// NewAuctionItemListFromSQLRows SQL을 scan 하여 []AuctionItem을 반환합니다.
+func NewAuctionItemListFromSQLRows(rows SQLRowsScannable) ([]*AuctionItem, error) {
+	items := make([]*AuctionItem, 0, 32)
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, err
+		}
+
+		item, err := NewAuctionItemFromSQLRow(rows)
+		if err != nil {
+			return nil, err
+		}
+
+		items = append(items, item)
+	}
+
+	return items, nil
 }
 
 func (a *AuctionItem) String() string {
