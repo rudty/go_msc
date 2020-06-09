@@ -76,9 +76,15 @@ func (a *AuctionSevice) FindItemByItemID(req *FindItemByItemIDRequest, res *Auct
 // FindItemByAuctionID 해당 유니크 아이디에 해당하는 아이템을 반환합니다.
 func (a *AuctionSevice) FindItemByAuctionID(req *UniqueID, res *AuctionItem) error {
 	tx, err := a.db.Begin()
+
+	if tx != nil {
+		defer tx.Commit()
+	}
+
 	if err != nil {
 		return err
 	}
+
 	a.lock.RLock()
 	defer a.lock.RUnlock()
 
