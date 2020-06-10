@@ -61,7 +61,9 @@ func handleExpire(a *AuctionSevice) int {
 	return len(expireItems)
 }
 
-func startExpire(a *AuctionSevice) {
+// Start 서버를 시작합니다
+// 시간 종료시 아이템이 만료되도록 설정합니다
+func (a *AuctionSevice) Start() {
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)

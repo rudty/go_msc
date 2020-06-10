@@ -10,6 +10,7 @@ import (
 
 func newRPCServer() {
 	auctionService := NewAuctionService()
+	auctionService.Start()
 	rpc.Register(auctionService)
 	// rpc.HandleHTTP()
 	l, err := net.Listen("tcp", ":1234")

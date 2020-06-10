@@ -80,6 +80,12 @@ func (a *AuctionItem) String() string {
 		a.ExpireTime)
 }
 
+// OnItemRegisterCallback 아이템 등록 시 호출될 callback
+type OnItemRegisterCallback func(item *AuctionItem)
+
+//OnItemBidSuccessCallback 다른 유저가 입찰에 성공 시 호출될 callback
+type OnItemBidSuccessCallback func(item *AuctionItem, newBidPrice int64, newUserID string)
+
 // AuctionSevice 경매 서버
 type AuctionSevice struct {
 	lock sync.RWMutex
