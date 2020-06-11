@@ -90,6 +90,9 @@ type OnItemBidSuccessCallback func(item *AuctionItem, newBidPrice int64, newUser
 type AuctionSevice struct {
 	lock sync.RWMutex
 	db   *sql.DB
+
+	ItemRegisterCallback   OnItemRegisterCallback
+	ItemBidSuccessCallback OnItemBidSuccessCallback
 }
 
 func createInMemoryAuctionTable() *sql.DB {

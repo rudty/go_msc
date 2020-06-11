@@ -62,6 +62,11 @@ func (a *AuctionSevice) Bid(req *BidRequest, res *BidResponse) error {
 		return err
 	}
 
+	cb := a.ItemBidSuccessCallback
+	if cb != nil {
+		go cb(item, req.Price, req.UserID)
+	}
+
 	res.Success = true
 	return nil
 }

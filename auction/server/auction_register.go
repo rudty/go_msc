@@ -25,5 +25,16 @@ func (a *AuctionSevice) RegisterItem(req *AuctionRegisterItemRequest, res *Uniqu
 	); err != nil {
 		return err
 	}
+
+	cb := a.ItemRegisterCallback
+	if cb != nil {
+		go cb(&AuctionItem{
+			AuctionID:  newAuctionID,
+			ItemID:     req.ItemID,
+			BidPrice:   req.BidPrice,
+			ExpireTime: expireTime,
+		})
+	}
+
 	return nil
 }
