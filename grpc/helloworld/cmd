@@ -1,0 +1,12 @@
+1. protoc 설치
+2. go install github.com/golang/protobuf/protoc-gen-go
+
+패킷일때
+```
+protoc --go_out=. ./grpc/helloworld/*.proto 
+```
+
+grpc일때
+```
+protoc --go_out=plugins=grpc:. ./grpc/helloworld/*.proto  
+```
