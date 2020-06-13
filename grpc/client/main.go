@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"io"
 	"log"
 	"os"
 	"time"
@@ -37,4 +38,21 @@ func main() {
 		log.Fatalf("could not greet: %v", err)
 	}
 	log.Printf("Greeting: %s", r.GetMessage())
+
+	o, err := c.StreamSayHello(context.Background(), &pb.HelloRequest{Name: name})
+	if err != nil {
+		log.Fatalf("could not stream greet: %v", err)
+	}
+	for {
+		recv, err := o.Recv()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+
+			log.Fatalf("stream greeting error: %v", err)
+		}
+		log.Printf("Greeting: %s", recv.GetMessage())
+	}
+
 }
