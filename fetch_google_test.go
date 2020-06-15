@@ -43,12 +43,3 @@ func TestFetchGoogleFail(t *testing.T) {
 	body := fetchGoogleDefault(1*time.Nanosecond, t)
 	fmt.Println(body)
 }
-
-func TestFetchGoogle2(t *testing.T) {
-	req, _ := http.NewRequest("GET", "https://www.google.com", nil)
-
-	body, err := FetchBodyWithHTTPRequest(req)
-	fmt.Println(body)
-	fmt.Println(err)
-	// fmt.Println(FetchBody("https://www.google.com"))
-}
