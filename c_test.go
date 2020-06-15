@@ -35,3 +35,18 @@ func TestStringToByte(t *testing.T) {
 	fmt.Println(b1)
 	fmt.Println(b2)
 }
+
+func byteToString(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
+}
+
+func TestStringBuilder(t *testing.T) {
+	// byte 배열을 string 처럼 취급하고 있으므로
+	// 런타임중에 string 을 수정가능.
+	// slice 재할당이 일어날때는 수정 불가..
+	b := []byte{104, 101, 108, 108, 111}
+	s := byteToString(b)
+	fmt.Println(s)
+	b[0] = 101
+	fmt.Println(s)
+}
