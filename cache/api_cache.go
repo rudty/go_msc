@@ -13,6 +13,14 @@ type leap struct {
 	next  map[Any]Any
 }
 
+type cacheLeap interface {
+	Call(fn Any, arg []Any) []reflect.Value
+}
+
+type leapFactory interface {
+	NewLeap() cacheLeap
+}
+
 // FunctionCache 함수를 캐싱할 수 있는 구조입니다.
 // 한번 호출한 함수는 내부적으로 저장해서 다음번 호출 시에는
 // 저장한 반환값을 다시 반환합니다.
@@ -36,16 +44,16 @@ func (f *FunctionCache) call(args ...Any) []reflect.Value {
 	cNode := f.leap
 	argMap := cNode.next
 	for i := 0; i < len(args); i++ {
-		value, ok := argMap[args[i]]
+		le, ok := argMap[args[i]]
 		if !ok {
 			newLeap := &leap{
 				value: nil,
 				next:  make(map[Any]Any),
 			}
 			argMap[args[i]] = newLeap
-			value = newLeap
+			le = newLeap
 		}
-		cNode = (value.(*leap))
+		cNode = (le.(*leap))
 	}
 
 	if cNode.value == nil {
@@ -80,7 +88,7 @@ func (f *FunctionCache) CallR2(args ...Any) (Any, Any) {
 }
 
 // CallR3 함수를 호출하고 3개의 반환값을 가져옵니다.
-// 반환값은 반드시 2개 이상이 있어야 합니다
+// 반환값은 반드시 3개 이상이 있어야 합니다
 // 내부적으로 캐싱이 되어있다면 캐싱된 반환값을 가져옵니
 func (f *FunctionCache) CallR3(args ...Any) (Any, Any, Any) {
 	ret := f.call(args...)
