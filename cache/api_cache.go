@@ -58,10 +58,10 @@ func (f *FunctionCache) call(args ...Any) []reflect.Value {
 	return cNode.value
 }
 
-// CallR1 함수를 호출하고 첫번째 반환값을 가져옵니다.
+// Call 함수를 호출하고 첫번째 반환값을 가져옵니다.
 // 반환값은 반드시 1개 이상이 있어야 합니다
 // 내부적으로 캐싱이 되어있다면 캐싱된 반환값을 가져옵니다
-func (f *FunctionCache) CallR1(args ...Any) Any {
+func (f *FunctionCache) Call(args ...Any) Any {
 	ret := f.call(args...)
 	return ret[0].Interface()
 }
