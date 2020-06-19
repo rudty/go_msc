@@ -3,6 +3,7 @@ package cache
 import (
 	"fmt"
 	"reflect"
+	"time"
 )
 
 // Any 함수 반환형식
@@ -19,6 +20,32 @@ type cacheLeap interface {
 
 type leapFactory interface {
 	NewLeap() cacheLeap
+}
+
+type timerLeap struct {
+	value       []reflect.Value
+	lastCallSec int64
+	next        map[Any]Any
+}
+
+func (t *timerLeap) Call(fn Any, arg []Any) []reflect.Value {
+	now := time.Now().Unix()
+	if t.value == nil || now-t.lastCallSec > 5000 {
+		fArgs := make([]reflect.Value, len(arg))
+		for i := 0; i < len(arg); i++ {
+			fArgs[i] = reflect.ValueOf(arg[i])
+		}
+		t.value = reflect.ValueOf(fn).Call(fArgs)
+		t.lastCallSec = now
+	}
+	return t.value
+}
+
+type timerLeapFactory struct {
+}
+
+func (t *timerLeapFactory) NewLeap() cacheLeap {
+	return &timerLeap{}
 }
 
 // FunctionCache 함수를 캐싱할 수 있는 구조입니다.
