@@ -14,6 +14,22 @@ func TestCreateThread(t *testing.T) {
 	a.Join()
 }
 
+func TestCreateThreadWithArgument(t *testing.T) {
+	a := NewThread(func(a int, b string) {
+		fmt.Println(a, b)
+	})
+	a.Start(1, "2")
+	a.Join()
+}
+
+func TestCreateThreadWithNoFunc(t *testing.T) {
+	defer func() {
+		recover()
+	}()
+	NewThread(3)
+	t.Error("must panic")
+}
+
 func TestJoin(t *testing.T) {
 	end := false
 	a := NewThread(func() {
@@ -26,6 +42,18 @@ func TestJoin(t *testing.T) {
 	if !end {
 		t.Error("must end")
 	}
+}
+
+func TestThreadStartCallTwice(t *testing.T) {
+	defer func() {
+		recover()
+	}()
+	a := NewThread(func() {
+		time.Sleep(100)
+	})
+	a.Start()
+	a.Start()
+	t.Error("must panic")
 }
 
 func TestStatus(t *testing.T) {
