@@ -25,7 +25,6 @@ func TestReleaseMutex(t *testing.T) {
 	for _, e := range m.data {
 		sum += int(e)
 	}
-
 	if sum != 0 {
 		t.Error("mutex release fail")
 	}

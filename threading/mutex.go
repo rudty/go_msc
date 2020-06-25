@@ -1,6 +1,6 @@
 package threading
 
-// Mutex CriticalSection impl
+// Mutex unix pthread_mutex, windows CriticalSection impl
 type Mutex struct {
-	data [45]byte
+	data [65]byte
 }
