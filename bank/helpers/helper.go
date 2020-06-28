@@ -1,6 +1,8 @@
 package helpers
 
 import (
+	"net/url"
+
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -18,7 +20,16 @@ func HashAndSalt(pass []byte) string {
 }
 
 func ConnectDB() *gorm.DB {
-	db, err := gorm.Open("mysql", "selectman:1234@tcp(127.0.0.1:3306)/my_database")
+	u := url.URL{}
+	u.User = url.UserPassword("selectman", "1234")
+	u.Host = "tcp(127.0.0.1:3306)"
+	u.Path = "my_database"
+	arg := url.Values{}
+	arg.Set("loc", "Asia/Seoul")
+	u.RawQuery = arg.Encode()
+
+	db, err := gorm.Open("mysql", u.String()[2:])
 	HandleErr(err)
+	db.LogMode(true)
 	return db
 }
