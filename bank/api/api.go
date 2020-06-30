@@ -34,11 +34,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 	var formattedBody Login
 	err = json.Unmarshal(body, &formattedBody)
 	helpers.HandleErr(err)
-	login := users.Login(formattedBody.Username, formattedBody.Password)
+	res, ok := users.Login(formattedBody.Username, formattedBody.Password)
 
-	if login["message"] == "all is fine" {
-		resp := login
-		json.NewEncoder(w).Encode(resp)
+	if ok {
+		json.NewEncoder(w).Encode(res)
 	} else {
 		resp := ErrResponse{Message: "Wrong username or password"}
 		json.NewEncoder(w).Encode(resp)
@@ -53,9 +52,9 @@ func register(w http.ResponseWriter, r *http.Request) {
 	var formattedBody Register
 	err = json.Unmarshal(body, &formattedBody)
 	helpers.HandleErr(err)
-	register := users.Register(formattedBody.Username, formattedBody.Email, formattedBody.Password)
+	register, ok := users.Register(formattedBody.Username, formattedBody.Email, formattedBody.Password)
 	// Prepare response
-	if register["message"] == "all is fine" {
+	if ok {
 		resp := register
 		json.NewEncoder(w).Encode(resp)
 		// Handle error in else

@@ -9,7 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Login(username string, pass string) map[string]interface{} {
+func Login(username string, pass string) (map[string]interface{}, bool) {
 	valid := helpers.Validation(
 		[]interfaces.Validation{
 			{Value: username, Valid: "username"},
@@ -20,13 +20,13 @@ func Login(username string, pass string) map[string]interface{} {
 		db := helpers.ConnectDB()
 		user := &interfaces.User{}
 		if db.Where("username = ? ", username).First(&user).RecordNotFound() {
-			return map[string]interface{}{"message": "User not found"}
+			return map[string]interface{}{"message": "User not found"}, false
 		}
 		// Verify password
 		passErr := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(pass))
 
 		if passErr == bcrypt.ErrMismatchedHashAndPassword && passErr != nil {
-			return map[string]interface{}{"message": "Wrong password"}
+			return map[string]interface{}{"message": "Wrong password"}, false
 		}
 		// Find accounts for the user
 		accounts := []interfaces.ResponseAccount{}
@@ -36,9 +36,9 @@ func Login(username string, pass string) map[string]interface{} {
 
 		var response = prepareResponse(user, accounts)
 
-		return response
+		return response, true
 	} else {
-		return map[string]interface{}{"message": "not valid values"}
+		return map[string]interface{}{"message": "not valid values"}, false
 	}
 }
 
@@ -70,7 +70,7 @@ func prepareToken(user *interfaces.User) string {
 	return token
 }
 
-func Register(username string, email string, pass string) map[string]interface{} {
+func Register(username string, email string, pass string) (map[string]interface{}, bool) {
 	// Add validation to registration
 	valid := helpers.Validation(
 		[]interfaces.Validation{
@@ -93,8 +93,8 @@ func Register(username string, email string, pass string) map[string]interface{}
 		accounts = append(accounts, respAccount)
 		var response = prepareResponse(user, accounts)
 
-		return response
+		return response, true
 	} else {
-		return map[string]interface{}{"message": "not valid values"}
+		return map[string]interface{}{"message": "not valid values"}, false
 	}
 }
