@@ -6,8 +6,8 @@ const minumumGrowSize = 32
 
 // BinaryStream encode bytes
 type BinaryStream struct {
-	pos int
 	buf []byte
+	pos int
 }
 
 func maxValue(a, b int) int {
@@ -131,18 +131,19 @@ func (b *BinaryStream) EncodeByteArray(v []byte) {
 	b.pos += len(v)
 }
 
-// EncodeString encode value
-func (b *BinaryStream) EncodeString(v string) {
+// EncodeCString encode string + NULL
+// "hello" => 'h', 'e', 'l', 'l', 'o', '\0'
+func (b *BinaryStream) EncodeCString(v string) {
 	remainSize := len(b.buf) - b.pos
 	requireSize := len(v) + 1 - remainSize // string + NULL
 	if requireSize > 0 {
 		b.growN(len(b.buf) + requireSize)
 	}
 	copy(b.buf[b.pos:], *(*[]byte)(unsafe.Pointer(&v)))
-	b.pos += len(v)
+	b.pos += len(v) + 1
 }
 
 // GetBytes get buffer
 func (b *BinaryStream) GetBytes() []byte {
-	return b.buf
+	return b.buf[0:b.pos]
 }

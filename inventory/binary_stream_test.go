@@ -149,14 +149,14 @@ func Test_Serialize_ByteArray_Size_5(t *testing.T) {
 
 func Test_Serialize_String(t *testing.T) {
 	b := NewBinaryStreamWithSize(6)
-	b.EncodeString("Hello")
+	b.EncodeCString("Hello")
 
 	if len(b.buf) != 6 {
 		t.Error("'H','e','l','l','o',NULL = 6")
 	}
 
 	b = NewBinaryStreamWithSize(4)
-	b.EncodeString("Hello")
+	b.EncodeCString("Hello")
 
 	if len(b.buf) < 6 {
 		t.Error("grow 'H','e','l','l','o',NULL = 6")
@@ -164,9 +164,19 @@ func Test_Serialize_String(t *testing.T) {
 
 	const longString = "HelloWorld HelloWorld HelloWorld HelloWorld HelloWorld HelloWorld"
 	b = NewBinaryStreamWithSize(1)
-	b.EncodeString(longString)
+	b.EncodeCString(longString)
 
 	if len(b.buf) <= len(longString) {
 		t.Error(fmt.Sprint("grow verylong string size:", len(longString)))
+	}
+}
+
+func Test_Serialize_String2(t *testing.T) {
+	b := NewBinaryStreamWithSize(32)
+	b.EncodeCString("Hello")
+	b.EncodeCString("Hello")
+
+	if len(b.GetBytes()) != 12 {
+		t.Error("hello + \\0 * 2 = 12 ")
 	}
 }
