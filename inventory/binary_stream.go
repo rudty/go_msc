@@ -38,16 +38,21 @@ func (b *BinaryStream) checkGrow(n int) {
 	}
 }
 
-// EncodeUInt8 encode value
-func (b *BinaryStream) EncodeUInt8(v uint8) {
+// EncodeByte encode value
+func (b *BinaryStream) EncodeByte(v byte) {
 	b.checkGrow(1)
 	b.buf[b.pos] = v
 	b.pos++
 }
 
+// EncodeUInt8 encode value
+func (b *BinaryStream) EncodeUInt8(v uint8) {
+	b.EncodeByte(v)
+}
+
 // EncodeInt8 encode value
 func (b *BinaryStream) EncodeInt8(v int8) {
-	b.EncodeUInt8(uint8(v))
+	b.EncodeByte(byte(v))
 }
 
 // EncodeUInt16 encode value

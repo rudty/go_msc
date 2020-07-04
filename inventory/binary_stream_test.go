@@ -22,6 +22,20 @@ func Test_Serialize_Int8_Grow(t *testing.T) {
 	}
 }
 
+func Test_Serialize_Byte(t *testing.T) {
+	b := NewBinaryStreamWithSize(10)
+
+	for i := 1; i < 10; i++ {
+		b.EncodeByte(byte(i))
+	}
+	for i := 1; i < 10; i++ {
+		if b.buf[i-1] != byte(i) {
+			t.Error("encode byte fail")
+			break
+		}
+	}
+}
+
 func Test_Serialize_Int16(t *testing.T) {
 	b := NewBinaryStream()
 	b.EncodeInt16(-1)
