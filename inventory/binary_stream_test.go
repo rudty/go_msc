@@ -108,3 +108,40 @@ func Test_Serialize_Int64_Grow(t *testing.T) {
 		}
 	}
 }
+
+func Test_Serialize_Int64_Size(t *testing.T) {
+	b := NewBinaryStreamWithSize(16)
+	b.EncodeInt64(-1)
+	b.EncodeInt64(-1)
+
+	for i := 0; i < len(b.buf); i++ {
+		if b.buf[i] != 255 {
+			t.Error("must 255")
+		}
+	}
+}
+
+func Test_Serialize_ByteArray_Size_1(t *testing.T) {
+	b := NewBinaryStreamWithSize(1)
+	b.EncodeByteArray([]byte{255, 1, 3, 4, 5})
+	if len(b.buf) != 5 {
+		t.Error("must grow")
+	}
+}
+
+func Test_Serialize_ByteArray_Size_2(t *testing.T) {
+	b := NewBinaryStreamWithSize(1)
+	b.EncodeUInt8(1)
+	b.EncodeByteArray([]byte{255, 1, 3, 4, 5})
+	if len(b.buf) != 6 {
+		t.Error("must grow")
+	}
+}
+
+func Test_Serialize_ByteArray_Size_5(t *testing.T) {
+	b := NewBinaryStreamWithSize(5)
+	b.EncodeByteArray([]byte{255, 1, 3, 4, 5})
+	if len(b.buf) != 5 {
+		t.Error("must grow")
+	}
+}

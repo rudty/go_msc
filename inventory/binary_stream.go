@@ -24,7 +24,7 @@ func NewBinaryStreamWithSize(n int) *BinaryStream {
 
 func (b *BinaryStream) growN(n int) {
 	var newBuf = make([]byte, n)
-	copy(newBuf, b.buf)
+	copy(newBuf, b.buf[0:b.pos])
 	b.buf = newBuf
 }
 
@@ -103,4 +103,18 @@ func (b *BinaryStream) EncodeUInt64(v uint64) {
 // EncodeInt64 encode value
 func (b *BinaryStream) EncodeInt64(v int64) {
 	b.EncodeUInt64(uint64(v))
+}
+
+func (b *BinaryStream) encodeByteArray(v []byte, offset, length int) {
+	dist := b.pos + length - len(b.buf)
+	if dist > 0 {
+		b.growN(len(b.buf) + dist)
+	}
+	copy(b.buf[b.pos:], v[offset:length])
+	b.pos += length
+}
+
+// EncodeByteArray encode value
+func (b *BinaryStream) EncodeByteArray(v []byte) {
+	b.encodeByteArray(v, 0, len(v))
 }
