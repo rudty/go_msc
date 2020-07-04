@@ -212,4 +212,8 @@ func Test_Serialize_Length_String(t *testing.T) {
 		[]byte{5, 0, 72, 101, 108, 108, 111}) {
 		t.Error("encode 5Hello")
 	}
+
+	const longString = "HelloHelloHelloHelloHelloHelloHelloHelloHelloHelloHelloHelloHelloHelloHelloHelloHello"
+	b = NewBinaryStreamWithSize(1)
+	b.EncodeUInt16LengthString(longString)
 }

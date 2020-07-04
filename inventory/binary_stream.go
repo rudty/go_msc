@@ -56,7 +56,7 @@ func (b *BinaryStream) checkGrow(n int) {
 
 func (b *BinaryStream) checkGrowN(n int) {
 	if b.pos+n > len(b.buf) {
-		b.growN(len(b.buf) + n)
+		b.growN(len(b.buf) - b.pos - 1 + n)
 	}
 }
 
@@ -140,13 +140,11 @@ func (b *BinaryStream) EncodeByteArray(v []byte) {
 // EncodeCString encode string + NULL
 // "hello" => 'h', 'e', 'l', 'l', 'o', '\0'
 func (b *BinaryStream) EncodeCString(v string) {
-	remainSize := len(b.buf) - b.pos
-	requireSize := len(v) + 1 - remainSize // string + NULL
-	if requireSize > 0 {
-		b.growN(len(b.buf) + requireSize)
-	}
+	length := len(v)
+	b.checkGrowN(length + 1) // size + string length
+
 	copy(b.buf[b.pos:], *(*[]byte)(unsafe.Pointer(&v)))
-	b.pos += len(v) + 1
+	b.pos += length + 1
 }
 
 // EncodeUInt16LengthString encode length + string
