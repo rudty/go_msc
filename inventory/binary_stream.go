@@ -1,9 +1,20 @@
 package inventory
 
+import "unsafe"
+
+const minumumGrowSize = 32
+
 // BinaryStream encode bytes
 type BinaryStream struct {
 	pos int
 	buf []byte
+}
+
+func maxValue(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 // NewBinaryStream new stream
@@ -23,18 +34,15 @@ func NewBinaryStreamWithSize(n int) *BinaryStream {
 }
 
 func (b *BinaryStream) growN(n int) {
+	n = maxValue(minumumGrowSize, n)
 	var newBuf = make([]byte, n)
 	copy(newBuf, b.buf[0:b.pos])
 	b.buf = newBuf
 }
 
-func (b *BinaryStream) grow() {
-	b.growN(len(b.buf) * 2)
-}
-
 func (b *BinaryStream) checkGrow(n int) {
 	if b.pos+n > len(b.buf) {
-		b.grow()
+		b.growN(len(b.buf) * 2)
 	}
 }
 
@@ -105,16 +113,28 @@ func (b *BinaryStream) EncodeInt64(v int64) {
 	b.EncodeUInt64(uint64(v))
 }
 
-func (b *BinaryStream) encodeByteArray(v []byte, offset, length int) {
-	dist := b.pos + length - len(b.buf)
+// EncodeByteArray encode value
+func (b *BinaryStream) EncodeByteArray(v []byte) {
+	dist := b.pos + len(v) - len(b.buf)
 	if dist > 0 {
 		b.growN(len(b.buf) + dist)
 	}
-	copy(b.buf[b.pos:], v[offset:length])
-	b.pos += length
+	copy(b.buf[b.pos:], v)
+	b.pos += len(v)
 }
 
-// EncodeByteArray encode value
-func (b *BinaryStream) EncodeByteArray(v []byte) {
-	b.encodeByteArray(v, 0, len(v))
+// EncodeString encode value
+func (b *BinaryStream) EncodeString(v string) {
+	remainSize := len(b.buf) - b.pos
+	requireSize := len(v) + 1 - remainSize // string + NULL
+	if requireSize > 0 {
+		b.growN(len(b.buf) + requireSize)
+	}
+	copy(b.buf[b.pos:], *(*[]byte)(unsafe.Pointer(&v)))
+	b.pos += len(v)
+}
+
+// GetBytes get buffer
+func (b *BinaryStream) GetBytes() []byte {
+	return b.buf
 }

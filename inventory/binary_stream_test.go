@@ -1,6 +1,7 @@
 package inventory
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -124,7 +125,7 @@ func Test_Serialize_Int64_Size(t *testing.T) {
 func Test_Serialize_ByteArray_Size_1(t *testing.T) {
 	b := NewBinaryStreamWithSize(1)
 	b.EncodeByteArray([]byte{255, 1, 3, 4, 5})
-	if len(b.buf) != 5 {
+	if len(b.buf) < 5 {
 		t.Error("must grow")
 	}
 }
@@ -133,7 +134,7 @@ func Test_Serialize_ByteArray_Size_2(t *testing.T) {
 	b := NewBinaryStreamWithSize(1)
 	b.EncodeUInt8(1)
 	b.EncodeByteArray([]byte{255, 1, 3, 4, 5})
-	if len(b.buf) != 6 {
+	if len(b.buf) < 6 {
 		t.Error("must grow")
 	}
 }
@@ -143,5 +144,29 @@ func Test_Serialize_ByteArray_Size_5(t *testing.T) {
 	b.EncodeByteArray([]byte{255, 1, 3, 4, 5})
 	if len(b.buf) != 5 {
 		t.Error("must grow")
+	}
+}
+
+func Test_Serialize_String(t *testing.T) {
+	b := NewBinaryStreamWithSize(6)
+	b.EncodeString("Hello")
+
+	if len(b.buf) != 6 {
+		t.Error("'H','e','l','l','o',NULL = 6")
+	}
+
+	b = NewBinaryStreamWithSize(4)
+	b.EncodeString("Hello")
+
+	if len(b.buf) < 6 {
+		t.Error("grow 'H','e','l','l','o',NULL = 6")
+	}
+
+	const longString = "HelloWorld HelloWorld HelloWorld HelloWorld HelloWorld HelloWorld"
+	b = NewBinaryStreamWithSize(1)
+	b.EncodeString(longString)
+
+	if len(b.buf) <= len(longString) {
+		t.Error(fmt.Sprint("grow verylong string size:", len(longString)))
 	}
 }
