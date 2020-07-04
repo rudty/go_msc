@@ -33,6 +33,14 @@ func NewBinaryStreamWithSize(n int) *BinaryStream {
 	}
 }
 
+// NewBinaryStreamWithByteArray internal buffer use b
+func NewBinaryStreamWithByteArray(b []byte) *BinaryStream {
+	return &BinaryStream{
+		pos: 0,
+		buf: b,
+	}
+}
+
 func (b *BinaryStream) growN(n int) {
 	n = maxValue(minumumGrowSize, n)
 	var newBuf = make([]byte, n)
