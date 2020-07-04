@@ -10,7 +10,15 @@ type BinaryStream struct {
 func NewBinaryStream() *BinaryStream {
 	return &BinaryStream{
 		pos: 0,
-		buf: make([]byte, 10),
+		buf: make([]byte, 8094),
+	}
+}
+
+// NewBinaryStreamWithSize new stream with buffer size
+func NewBinaryStreamWithSize(n int) *BinaryStream {
+	return &BinaryStream{
+		pos: 0,
+		buf: make([]byte, n),
 	}
 }
 
@@ -24,46 +32,70 @@ func (b *BinaryStream) grow() {
 	b.growN(len(b.buf) * 2)
 }
 
-// EncodeInt8 encode value
-func (b *BinaryStream) EncodeInt8(v int8) {
-	if b.pos == len(b.buf) {
+func (b *BinaryStream) checkGrow(n int) {
+	if b.pos+n > len(b.buf) {
 		b.grow()
 	}
-	b.buf[b.pos] = byte(v)
+}
+
+// EncodeUInt8 encode value
+func (b *BinaryStream) EncodeUInt8(v uint8) {
+	b.checkGrow(1)
+	b.buf[b.pos] = v
 	b.pos++
 }
 
-// // SerializeInt8 byte slice 에 int8 을 인코딩합니다.
-// func SerializeInt8(b []byte, v int8) []byte {
-// 	b = append(b, byte(v))
-// 	return b
-// }
+// EncodeInt8 encode value
+func (b *BinaryStream) EncodeInt8(v int8) {
+	b.EncodeUInt8(uint8(v))
+}
 
-// // SerializeInt16 byte slice 에 int16 을 인코딩합니다.
-// func SerializeInt16(b []byte, v int16) []byte {
-// 	b = append(b, byte(v))
-// 	b = append(b, byte(v>>8))
-// 	return b
-// }
+// EncodeUInt16 encode value
+func (b *BinaryStream) EncodeUInt16(v uint16) {
+	b.checkGrow(2)
+	a := b.buf[b.pos:]
+	a[0] = byte(v)
+	a[1] = byte(v >> 8)
+	b.pos += 2
+}
 
-// // SerializeInt32 byte slice 에 int32 을 인코딩합니다.
-// func SerializeInt32(b []byte, v int32) []byte {
-// 	b = append(b, byte(v))
-// 	b = append(b, byte(v>>8))
-// 	b = append(b, byte(v>>16))
-// 	b = append(b, byte(v>>24))
-// 	return b
-// }
+// EncodeInt16 encode value
+func (b *BinaryStream) EncodeInt16(v int16) {
+	b.EncodeUInt16(uint16(v))
+}
 
-// // SerializeInt64 byte slice 에 int64 을 인코딩합니다.
-// func SerializeInt64(b []byte, v int64) []byte {
-// 	b = append(b, byte(v))
-// 	b = append(b, byte(v>>8))
-// 	b = append(b, byte(v>>16))
-// 	b = append(b, byte(v>>24))
-// 	b = append(b, byte(v>>32))
-// 	b = append(b, byte(v>>40))
-// 	b = append(b, byte(v>>48))
-// 	b = append(b, byte(v>>56))
-// 	return b
-// }
+// EncodeUInt32 encode value
+func (b *BinaryStream) EncodeUInt32(v uint32) {
+	b.checkGrow(4)
+	a := b.buf[b.pos:]
+	a[0] = byte(v)
+	a[1] = byte(v >> 8)
+	a[2] = byte(v >> 16)
+	a[3] = byte(v >> 24)
+	b.pos += 4
+}
+
+// EncodeInt32 encode value
+func (b *BinaryStream) EncodeInt32(v int32) {
+	b.EncodeUInt32(uint32(v))
+}
+
+// EncodeUInt64 encode value
+func (b *BinaryStream) EncodeUInt64(v uint64) {
+	b.checkGrow(8)
+	a := b.buf[b.pos:]
+	a[0] = byte(v)
+	a[1] = byte(v >> 8)
+	a[2] = byte(v >> 16)
+	a[3] = byte(v >> 24)
+	a[4] = byte(v >> 32)
+	a[5] = byte(v >> 40)
+	a[6] = byte(v >> 48)
+	a[7] = byte(v >> 56)
+	b.pos += 8
+}
+
+// EncodeInt64 encode value
+func (b *BinaryStream) EncodeInt64(v int64) {
+	b.EncodeUInt64(uint64(v))
+}
