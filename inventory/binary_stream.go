@@ -54,6 +54,12 @@ func (b *BinaryStream) checkGrow(n int) {
 	}
 }
 
+func (b *BinaryStream) checkGrowN(n int) {
+	if b.pos+n > len(b.buf) {
+		b.growN(len(b.buf) + n)
+	}
+}
+
 // EncodeByte encode value
 func (b *BinaryStream) EncodeByte(v byte) {
 	b.checkGrow(1)
@@ -141,6 +147,20 @@ func (b *BinaryStream) EncodeCString(v string) {
 	}
 	copy(b.buf[b.pos:], *(*[]byte)(unsafe.Pointer(&v)))
 	b.pos += len(v) + 1
+}
+
+// EncodeUInt16LengthString encode length + string
+// "hello" => int16(5) + 'h', 'e', 'l', 'l', 'o'
+func (b *BinaryStream) EncodeUInt16LengthString(v string) {
+	length := len(v)
+	b.checkGrowN(length + 2) // size + string length
+
+	b.buf[b.pos] = byte(length)
+	b.buf[b.pos+1] = byte(length >> 8)
+
+	copy(b.buf[b.pos+2:], *(*[]byte)(unsafe.Pointer(&v)))
+
+	b.pos += length + 2
 }
 
 // GetBytes get buffer

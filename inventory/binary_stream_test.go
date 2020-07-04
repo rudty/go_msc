@@ -5,6 +5,19 @@ import (
 	"testing"
 )
 
+func checkbyteArrayEquals(a, b []byte) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for i := 0; i < len(a); i++ {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
 func Test_Serialize_Int8_Not_Grow(t *testing.T) {
 	b := NewBinaryStreamWithSize(10)
 	for i := 1; i < 11; i++ {
@@ -178,5 +191,25 @@ func Test_Serialize_String2(t *testing.T) {
 
 	if len(b.GetBytes()) != 12 {
 		t.Error("hello + \\0 * 2 = 12 ")
+	}
+}
+
+func Test_Serialize_Length_String(t *testing.T) {
+	b := NewBinaryStreamWithSize(10)
+	b.EncodeUInt16LengthString("Hello")
+
+	if !checkbyteArrayEquals(
+		b.GetBytes(),
+		[]byte{5, 0, 72, 101, 108, 108, 111}) {
+		t.Error("encode 5Hello")
+	}
+
+	b = NewBinaryStreamWithSize(1)
+	b.EncodeUInt16LengthString("Hello")
+
+	if !checkbyteArrayEquals(
+		b.GetBytes(),
+		[]byte{5, 0, 72, 101, 108, 108, 111}) {
+		t.Error("encode 5Hello")
 	}
 }
