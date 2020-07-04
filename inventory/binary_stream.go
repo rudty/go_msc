@@ -2,6 +2,7 @@ package inventory
 
 import "unsafe"
 
+const defaultBufferSize = 8094
 const minumumGrowSize = 32
 
 // BinaryStream encode bytes
@@ -21,7 +22,7 @@ func maxValue(a, b int) int {
 func NewBinaryStream() *BinaryStream {
 	return &BinaryStream{
 		pos: 0,
-		buf: make([]byte, 8094),
+		buf: make([]byte, defaultBufferSize),
 	}
 }
 
