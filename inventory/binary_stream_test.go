@@ -327,3 +327,20 @@ func Test_Decode_Length_String(t *testing.T) {
 		t.Error("Decode the go programming language")
 	}
 }
+
+func Test_Seek(t *testing.T) {
+	b := NewBinaryStreamWithSize(32)
+	b.EncodeUInt8(4)
+	o := b.Offset()
+	for i := 0; i < 10; i++ {
+		b.EncodeUInt8(4)
+	}
+	l := b.Offset()
+	b.Seek(o)
+	b.EncodeUInt8(1)
+	b.Seek(l)
+	if !checkbyteArrayEquals(b.GetBytes(),
+		[]byte{4, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4}) {
+		t.Error("seek fail")
+	}
+}

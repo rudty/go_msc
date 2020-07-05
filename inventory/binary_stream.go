@@ -242,3 +242,13 @@ func (b *BinaryStream) DecodeUInt16LengthString() string {
 	b.pos += length
 	return *(*string)(unsafe.Pointer(&v))
 }
+
+// Offset get internal buffer index
+func (b *BinaryStream) Offset() int {
+	return b.pos
+}
+
+// Seek buffer index
+func (b *BinaryStream) Seek(n int) {
+	b.pos = n
+}
