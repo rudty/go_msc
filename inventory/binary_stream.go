@@ -166,3 +166,79 @@ func (b *BinaryStream) EncodeUInt16LengthString(v string) {
 func (b *BinaryStream) GetBytes() []byte {
 	return b.buf[0:b.pos]
 }
+
+// DecodeByte decode value
+func (b *BinaryStream) DecodeByte() byte {
+	v := b.buf[b.pos]
+	b.pos++
+	return v
+}
+
+// DecodeUInt8 decode value
+func (b *BinaryStream) DecodeUInt8() uint8 {
+	return uint8(b.DecodeByte())
+}
+
+// DecodeInt8 decode value
+func (b *BinaryStream) DecodeInt8() int8 {
+	return int8(b.DecodeByte())
+}
+
+// DecodeUInt16 decode value
+func (b *BinaryStream) DecodeUInt16() uint16 {
+	v := *(*uint16)(unsafe.Pointer(&b.buf[b.pos]))
+	b.pos += 2
+	return v
+}
+
+// DecodeInt16 decode value
+func (b *BinaryStream) DecodeInt16() int16 {
+	return int16(b.DecodeUInt16())
+}
+
+// DecodeUInt32 decode value
+func (b *BinaryStream) DecodeUInt32() uint32 {
+	v := *(*uint32)(unsafe.Pointer(&b.buf[b.pos]))
+	b.pos += 4
+	return v
+}
+
+// DecodeInt32 decode value
+func (b *BinaryStream) DecodeInt32() int32 {
+	return int32(b.DecodeUInt32())
+}
+
+// DecodeUInt64 decode value
+func (b *BinaryStream) DecodeUInt64() uint64 {
+	v := *(*uint64)(unsafe.Pointer(&b.buf[b.pos]))
+	b.pos += 8
+	return v
+}
+
+// DecodeInt64 decode value
+func (b *BinaryStream) DecodeInt64() int64 {
+	return int64(b.DecodeUInt64())
+}
+
+// DecodeCString decode string + NULL
+// 'h', 'e', 'l', 'l', 'o', '\0' => "hello"
+func (b *BinaryStream) DecodeCString() string {
+	r := make([]byte, 0, 32)
+	for {
+		v := b.DecodeByte()
+		if v == 0 {
+			break
+		}
+		r = append(r, v)
+	}
+	return *(*string)(unsafe.Pointer(&r))
+}
+
+// DecodeUInt16LengthString encode length + string
+// int16(5) + 'h', 'e', 'l', 'l', 'o' => "hello"
+func (b *BinaryStream) DecodeUInt16LengthString() string {
+	length := int(b.DecodeUInt16())
+	v := b.buf[b.pos : b.pos+length]
+	b.pos += length
+	return *(*string)(unsafe.Pointer(&v))
+}

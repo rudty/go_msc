@@ -217,3 +217,113 @@ func Test_Serialize_Length_String(t *testing.T) {
 	b = NewBinaryStreamWithSize(1)
 	b.EncodeUInt16LengthString(longString)
 }
+
+func Test_Decode_Byte(t *testing.T) {
+	b := NewBinaryStream()
+	b.EncodeUInt8(255)
+	b.EncodeInt8(-123)
+
+	d := NewBinaryStreamWithByteArray(b.GetBytes())
+	if d.DecodeUInt8() != 255 {
+		t.Error("encode 255")
+	}
+	if d.DecodeInt8() != -123 {
+		t.Error("encode -123")
+	}
+}
+
+func Test_Decode_int16(t *testing.T) {
+	b := NewBinaryStream()
+	b.EncodeUInt16(65535)
+	b.EncodeInt16(32767)
+	b.EncodeInt16(-32768)
+
+	d := NewBinaryStreamWithByteArray(b.GetBytes())
+	if d.DecodeUInt16() != 65535 {
+		t.Error("decode fail 65535")
+	}
+	if d.DecodeInt16() != 32767 {
+		t.Error("decode fail 32767")
+	}
+	if d.DecodeInt16() != -32768 {
+		t.Error("decode fail -32768")
+	}
+}
+
+func Test_Decode_int32(t *testing.T) {
+	b := NewBinaryStream()
+	b.EncodeUInt32(4294967295)
+	b.EncodeInt32(2147483647)
+	b.EncodeInt32(-2147483648)
+
+	d := NewBinaryStreamWithByteArray(b.GetBytes())
+	if d.DecodeUInt32() != 4294967295 {
+		t.Error("decode fail 4294967295")
+	}
+	if d.DecodeInt32() != 2147483647 {
+		t.Error("decode fail 2147483647")
+	}
+	if d.DecodeInt32() != -2147483648 {
+		t.Error("decode fail -2147483648")
+	}
+}
+
+func Test_Decode_int64(t *testing.T) {
+	b := NewBinaryStream()
+	b.EncodeUInt64(18446744073709551615)
+	b.EncodeInt64(9223372036854775807)
+	b.EncodeInt64(-9223372036854775808)
+
+	d := NewBinaryStreamWithByteArray(b.GetBytes())
+	if d.DecodeUInt64() != 18446744073709551615 {
+		t.Error("decode fail 18446744073709551615")
+	}
+	if d.DecodeInt64() != 9223372036854775807 {
+		t.Error("decode fail 9223372036854775807")
+	}
+	if d.DecodeInt64() != -9223372036854775808 {
+		t.Error("decode fail -9223372036854775808")
+	}
+}
+
+func Test_Decode_CString(t *testing.T) {
+	b := NewBinaryStream()
+	b.EncodeCString("HELLO")
+	b.EncodeCString("WORLD")
+	b.EncodeCString("the go programming language")
+
+	d := NewBinaryStreamWithByteArray(b.GetBytes())
+
+	if d.DecodeCString() != "HELLO" {
+		t.Error("DecodeC HELLO")
+	}
+
+	if d.DecodeCString() != "WORLD" {
+		t.Error("DecodeC WORLD")
+	}
+
+	if d.DecodeCString() != "the go programming language" {
+		t.Error("DecodeC the go programming language")
+	}
+}
+
+func Test_Decode_Length_String(t *testing.T) {
+	b := NewBinaryStream()
+	b.EncodeUInt16LengthString("HELLO")
+	b.EncodeUInt16LengthString("WORLD")
+	b.EncodeUInt16LengthString("the go programming language")
+
+	d := NewBinaryStreamWithByteArray(b.GetBytes())
+
+	if d.DecodeUInt16LengthString() != "HELLO" {
+		t.Error("Decode HELLO")
+	}
+
+	if d.DecodeUInt16LengthString() != "WORLD" {
+		t.Error("Decode WORLD")
+	}
+
+	if d.DecodeUInt16LengthString() != "the go programming language" {
+		t.Error("Decode the go programming language")
+	}
+}
