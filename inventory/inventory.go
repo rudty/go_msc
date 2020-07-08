@@ -12,18 +12,18 @@ type X struct {
 	storage map[int64]*Item
 }
 
-//AddItem 아이템을 추가합니다
-func (x *X) AddItem(req AddItemRequest) {
+//Add 아이템을 추가합니다
+func (x *X) Add(req *AddItemRequest) {
 	x.storage[req.ID] = &req.Item
 }
 
-//RemoveItemByID 아이템을 추가합니다
-func (x *X) RemoveItemByID(id int64) {
+//RemoveByID 아이템을 추가합니다
+func (x *X) RemoveByID(id int64) {
 	delete(x.storage, id)
 }
 
 //GetItem 해당 아이디의 아이템을 반환합니다
-func (x *X) GetItem(id int64) (*Item, bool) {
+func (x *X) Get(id int64) (*Item, bool) {
 	item, ok := x.storage[id]
 	return item, ok
 }
@@ -40,22 +40,22 @@ func NewInventory() *Inventory {
 	return e
 }
 
-func (inv *Inventory) AddItem(req AddItemRequest) {
+func (inv *Inventory) Add(req *AddItemRequest) {
 	inv.lock.Lock()
 	defer inv.lock.Unlock()
-	inv.items.AddItem(req)
+	inv.items.Add(req)
 }
 
-func (inv *Inventory) RemoveItemByID(id int64) {
+func (inv *Inventory) RemoveByID(id int64) {
 	inv.lock.Lock()
 	defer inv.lock.Unlock()
-	inv.items.RemoveItemByID(req)
+	inv.items.RemoveByID(id)
 }
 
-func (inv *Inventory) GetItemThen(id int64, cb func(*Item)) {
+func (inv *Inventory) GetThen(id int64, cb func(*Item)) {
 	inv.lock.Lock()
 	defer inv.lock.Unlock()
-	item, ok := inv.items.GetItem(id)
+	item, ok := inv.items.Get(id)
 	if ok {
 		cb(item)
 	}
@@ -64,5 +64,5 @@ func (inv *Inventory) GetItemThen(id int64, cb func(*Item)) {
 func (inv *Inventory) Transaction(cb func(*X)) {
 	inv.lock.Lock()
 	defer inv.lock.Unlock()
-	cb(inv.items)
+	cb(&inv.items)
 }
