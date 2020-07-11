@@ -10,6 +10,20 @@ type Item struct {
 	ItemID     int32
 	SlotIndex  int32
 	Properties string
+	IsRemoved  bool
+}
+
+func (t *Item) EncodeIntoBinaryStream(b *BinaryStream) {
+	b.EncodeInt64(t.ID)
+	b.EncodeInt32(t.ItemID)
+	b.EncodeInt32(t.SlotIndex)
+	b.EncodeUInt16LengthString(t.Properties)
+}
+
+func (t *Item) EncodeByte() []byte {
+	b := NewBinaryStreamWithSize(20 + len(t.Properties))
+	t.EncodeIntoBinaryStream(b)
+	return b.GetBytes()
 }
 
 func NewItemFromBuffer(buf []byte) (*Item, error) {
