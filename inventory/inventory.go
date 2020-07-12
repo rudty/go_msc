@@ -6,6 +6,22 @@ type AddItemRequest struct {
 	Item
 }
 
+type InventoryLogger interface {
+	Add(e Item)
+	Remove(e Item)
+}
+
+type defaultInventoryLogger struct {
+}
+
+func (d defaultInventoryLogger) Add(e Item) {
+
+}
+
+func (d defaultInventoryLogger) Remove(e Item) {
+
+}
+
 //X 아이템을 관리하는 구조체
 //Lock으로 관리하지 않습니다
 type X struct {
@@ -22,7 +38,7 @@ func (x *X) RemoveByID(id int64) {
 	delete(x.storage, id)
 }
 
-//GetItem 해당 아이디의 아이템을 반환합니다
+//Get 해당 아이디의 아이템을 반환합니다
 func (x *X) Get(id int64) (*Item, bool) {
 	item, ok := x.storage[id]
 	return item, ok
