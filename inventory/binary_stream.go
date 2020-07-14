@@ -1,6 +1,9 @@
 package inventory
 
-import "unsafe"
+import (
+	"encoding"
+	"unsafe"
+)
 
 const defaultBufferSize = 8094
 const minumumGrowSize = 32
@@ -162,6 +165,16 @@ func (b *BinaryStream) EncodeUInt16LengthString(v string) {
 	b.pos += length + 2
 }
 
+// EncodeObject encode value
+func (b *BinaryStream) EncodeObject(o encoding.BinaryMarshaler) error {
+	data, err := o.MarshalBinary()
+	if err != nil {
+		return err
+	}
+	b.EncodeByteArray(data)
+	return nil
+}
+
 // GetBytes get buffer
 func (b *BinaryStream) GetBytes() []byte {
 	return b.buf[0:b.pos]
@@ -242,6 +255,16 @@ func (b *BinaryStream) DecodeUInt16LengthString() string {
 	b.pos += length
 	return *(*string)(unsafe.Pointer(&v))
 }
+
+// DecodeObject decode value
+// func (b *BinaryStream) DecodeObject(o encoding.BinaryUnmarshaler) interface{} {
+// 	data, err := o.UnmarshalBinary(b.buf)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	b.Decode(data)
+// 	return nil
+// }
 
 // Offset get internal buffer index
 func (b *BinaryStream) Offset() int {
