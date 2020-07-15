@@ -165,12 +165,13 @@ func (b *BinaryStream) EncodeUInt16LengthString(v string) {
 	b.pos += length + 2
 }
 
-// EncodeObject encode value
-func (b *BinaryStream) EncodeObject(o encoding.BinaryMarshaler) error {
+// EncodeUInt16LengthObject encode value
+func (b *BinaryStream) EncodeUInt16LengthObject(o encoding.BinaryMarshaler) error {
 	data, err := o.MarshalBinary()
 	if err != nil {
 		return err
 	}
+	b.EncodeUInt16(uint16(len(data)))
 	b.EncodeByteArray(data)
 	return nil
 }
@@ -256,15 +257,16 @@ func (b *BinaryStream) DecodeUInt16LengthString() string {
 	return *(*string)(unsafe.Pointer(&v))
 }
 
-// DecodeObject decode value
-// func (b *BinaryStream) DecodeObject(o encoding.BinaryUnmarshaler) interface{} {
-// 	data, err := o.UnmarshalBinary(b.buf)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	b.Decode(data)
-// 	return nil
-// }
+// DecodeUInt16LengthObjectInto decode value into dest
+func (b *BinaryStream) DecodeUInt16LengthObjectInto(dest encoding.BinaryUnmarshaler) error {
+	length := int(b.DecodeUInt16())
+	err := dest.UnmarshalBinary(b.buf)
+	if err != nil {
+		return err
+	}
+	b.pos += length
+	return nil
+}
 
 // Offset get internal buffer index
 func (b *BinaryStream) Offset() int {
