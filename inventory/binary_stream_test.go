@@ -344,3 +344,43 @@ func Test_Seek(t *testing.T) {
 		t.Error("seek fail")
 	}
 }
+
+type objEncode struct {
+	a string
+	b int64
+	c int8
+}
+
+func (o *objEncode) MarshalBinary() (data []byte, err error) {
+	b := NewBinaryStream()
+	b.EncodeCString(o.a)
+	b.EncodeInt64(o.b)
+	b.EncodeInt8(o.c)
+	return b.GetBytes(), nil
+}
+
+func (o *objEncode) UnmarshalBinary(data []byte) error {
+	b := NewBinaryStreamWithByteArray(data)
+	o.a = b.DecodeCString()
+	o.b = b.DecodeInt64()
+	o.c = b.DecodeInt8()
+	return nil
+}
+
+func Test_Encode_Decode_Object(t *testing.T) {
+	b1 := NewBinaryStream()
+	o1 := &objEncode{
+		a: "hello world",
+		b: 64,
+		c: 98,
+	}
+	b1.EncodeUInt16LengthObject(o1)
+
+	o2 := &objEncode{}
+	b2 := NewBinaryStreamWithByteArray(b1.GetBytes())
+	b2.DecodeUInt16LengthObjectInto(o2)
+
+	if *o1 != *o2 {
+		t.Error("encode decode error")
+	}
+}

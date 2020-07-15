@@ -260,7 +260,7 @@ func (b *BinaryStream) DecodeUInt16LengthString() string {
 // DecodeUInt16LengthObjectInto decode value into dest
 func (b *BinaryStream) DecodeUInt16LengthObjectInto(dest encoding.BinaryUnmarshaler) error {
 	length := int(b.DecodeUInt16())
-	err := dest.UnmarshalBinary(b.buf)
+	err := dest.UnmarshalBinary(b.buf[b.pos:])
 	if err != nil {
 		return err
 	}
