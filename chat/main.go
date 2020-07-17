@@ -1,6 +1,6 @@
 package main
 
 func main() {
-	s := NewChatServer()
+	s := newChatServer()
 	s.Serve()
 }
