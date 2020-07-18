@@ -10,25 +10,41 @@ import (
 type chatServer struct {
 	lock      sync.RWMutex
 	clients   map[uint32]*client
-	OnReceive func(c *client)
+	OnReceive func(c clientMessage)
+}
+
+type clientMessage struct {
+	Client  *client
+	Receive []byte
 }
 
 func newChatServer() *chatServer {
-	return &chatServer{}
+	s := &chatServer{}
+	s.clients = make(map[uint32]*client, 64)
+	return s
 }
 
 var uniqueID uint32 = 0
 
-func (s *chatServer) callCallback(cb func(c *client), c *client) {
+func (s *chatServer) callCallback(cb func(c clientMessage), c *client, data []byte) {
 	defer func() {
 		recover()
 	}()
-	cb(c)
+	cb(clientMessage{
+		Client:  c,
+		Receive: data,
+	})
 }
 
 func (s *chatServer) registerClient(c *client) {
 	s.lock.Lock()
 	s.clients[c.ClientID] = c
+	s.lock.Unlock()
+}
+
+func (s *chatServer) unRegisterClient(c *client) {
+	s.lock.Lock()
+	delete(s.clients, c.ClientID)
 	s.lock.Unlock()
 }
 
@@ -46,18 +62,23 @@ func (s *chatServer) onAccept(clientSocket net.Conn) {
 	for {
 		len, err := c.Conn.Read(buf[:])
 		if err != nil {
-			return
+			log.Println(err)
+			break
 		}
-
-		c.Receive = buf[:len]
 
 		cb := s.OnReceive
 		if cb != nil {
-			s.callCallback(cb, &c)
+			s.callCallback(cb, &c, buf[:len])
 		}
 	}
 
+	s.unRegisterClient(&c)
+
 	clientSocket.Close()
+}
+
+func (s *chatServer) Do() {
+
 }
 
 func (s *chatServer) Serve() {

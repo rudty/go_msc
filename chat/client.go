@@ -5,7 +5,6 @@ import "net"
 type client struct {
 	ClientID uint32
 	Conn     net.Conn
-	Receive  []byte
 }
 
 func (c *client) WriteByteArray(buf []byte) error {
