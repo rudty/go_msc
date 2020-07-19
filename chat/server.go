@@ -24,12 +24,15 @@ func newChatServer() *chatServer {
 	return s
 }
 
+// 아무것도 안함
+func defaultRecover() {
+	recover()
+}
+
 var uniqueID uint32 = 0
 
 func (s *chatServer) callCallback(cb func(c clientMessage), c *client, data []byte) {
-	defer func() {
-		recover()
-	}()
+	defer defaultRecover()
 	cb(clientMessage{
 		Client:  c,
 		Receive: data,
@@ -77,8 +80,20 @@ func (s *chatServer) onAccept(clientSocket net.Conn) {
 	clientSocket.Close()
 }
 
-func (s *chatServer) Do() {
-
+func (s *chatServer) Do(run func(c *client)) {
+	s.lock.Lock()
+	w := sync.WaitGroup{}
+	for _, e := range s.clients {
+		w.Add(1)
+		client := e
+		go func() {
+			defer defaultRecover()
+			defer w.Done()
+			run(client)
+		}()
+	}
+	w.Wait()
+	s.lock.Unlock()
 }
 
 func (s *chatServer) Serve() {
