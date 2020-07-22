@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"log"
 	"net"
 	"sync"
@@ -65,7 +66,9 @@ func (s *chatServer) onAccept(clientSocket net.Conn) {
 	for {
 		len, err := c.Conn.Read(buf[:])
 		if err != nil {
-			log.Println(err)
+			if err != io.EOF {
+				log.Println(err)
+			}
 			break
 		}
 
@@ -80,7 +83,7 @@ func (s *chatServer) onAccept(clientSocket net.Conn) {
 	clientSocket.Close()
 }
 
-func (s *chatServer) Do(run func(c *client)) {
+func (s *chatServer) Range(run func(c *client)) {
 	s.lock.Lock()
 	w := sync.WaitGroup{}
 	for _, e := range s.clients {

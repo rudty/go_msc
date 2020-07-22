@@ -1,25 +1,49 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net"
+	"strconv"
+	"sync"
 	"time"
+	"unsafe"
 )
 
 func main() {
 	s := newChatServer()
-	s.OnReceive = func(c clientMessage) {
-		fmt.Println("receive:" + string(c.Receive))
-		c.Client.WriteByteArray([]byte("OK"))
+	s.OnReceive = func(m clientMessage) {
+		s.Range(func(c *client) {
+			c.WriteMessage(m.Receive)
+		})
 	}
 	go s.Serve()
-	time.Sleep(1 * time.Second)
+	time.Sleep(500 * time.Millisecond)
 
-	c, _ := net.Dial("tcp", "127.0.0.1:8080")
-	c.Write([]byte("hello world"))
-	time.Sleep(1 * time.Second)
-	var buf [8094]byte
-	len, _ := c.Read(buf[:])
-	fmt.Println(string(buf[:len]))
-	c.Close()
+	wg := sync.WaitGroup{}
+
+	for i := 0; i < 2; i++ {
+		idx := i
+		wg.Add(1)
+		go func() {
+			c, _ := net.Dial("tcp", "127.0.0.1:8080")
+			c.Write([]byte("hello world" + strconv.Itoa(idx)))
+			var buf [8094]byte
+			for {
+				_, err := c.Read(buf[:4])
+				if err != nil {
+					break
+				}
+				length := *(*int32)(unsafe.Pointer(&buf[0]))
+				len, err := c.Read(buf[:length])
+				if err != nil {
+					break
+				}
+				s := string(buf[:len])
+				log.Println(s)
+			}
+			// c.Close()
+			wg.Done()
+		}()
+	}
+	wg.Wait()
 }
