@@ -26,7 +26,12 @@ func main() {
 		wg.Add(1)
 		go func() {
 			c, _ := net.Dial("tcp", "127.0.0.1:8080")
-			c.Write([]byte("hello world" + strconv.Itoa(idx)))
+			time.Sleep(50 * time.Millisecond)
+			msg := []byte("hello world" + strconv.Itoa(idx))
+			var header [4]byte
+			header[0] = byte(len(msg))
+			c.Write(header[:])
+			c.Write(msg)
 			var buf [8094]byte
 			for {
 				_, err := c.Read(buf[:4])

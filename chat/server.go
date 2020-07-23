@@ -64,7 +64,7 @@ func (s *chatServer) onAccept(clientSocket net.Conn) {
 	s.registerClient(&c)
 
 	for {
-		len, err := c.Conn.Read(buf[:])
+		l, err := c.ReadMessageInto(buf[:])
 		if err != nil {
 			if err != io.EOF {
 				log.Println(err)
@@ -74,7 +74,7 @@ func (s *chatServer) onAccept(clientSocket net.Conn) {
 
 		cb := s.OnReceive
 		if cb != nil {
-			s.callCallback(cb, &c, buf[:len])
+			s.callCallback(cb, &c, buf[:l])
 		}
 	}
 

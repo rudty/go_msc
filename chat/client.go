@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"io"
 	"net"
 )
 
@@ -39,4 +41,31 @@ func (c *client) WriteByteArray(buf []byte) error {
 			return nil
 		}
 	}
+}
+
+func (c *client) ReadMessageInto(buf []byte) (int, error) {
+	var header [4]byte
+	_, err := c.Conn.Read(header[:])
+	if err != nil {
+		return 0, err
+	}
+
+	length := int(header[0])
+	length |= int(header[1]) << 8
+	length |= int(header[2]) << 16
+	length |= int(header[3]) << 24
+
+	readLength := 0
+
+	for readLength < length {
+		l, err := c.Conn.Read(buf[:length])
+		if err != nil {
+			if err == io.EOF {
+				return 0, errors.New("packet body read fail")
+			}
+			return 0, err
+		}
+		readLength += l
+	}
+	return length, nil
 }
