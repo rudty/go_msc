@@ -6,6 +6,9 @@ import (
 	"net"
 )
 
+var errorPacketBodyReadFail = errors.New("packet body read fail")
+var errorPacketHeaderReadFail = errors.New("packet header read fail")
+
 type client struct {
 	ClientID uint32
 	Conn     net.Conn
@@ -20,7 +23,7 @@ func (c *client) WriteMessage(buf []byte) error {
 	header[2] = byte(length >> 16)
 	header[3] = byte(length >> 24)
 
-	if _, err := c.Conn.Write(header[:]); err != nil {
+	if err := c.WriteByteArray(header[:]); err != nil {
 		return err
 	}
 
@@ -28,44 +31,51 @@ func (c *client) WriteMessage(buf []byte) error {
 }
 
 func (c *client) WriteByteArray(buf []byte) error {
-	var sendIndex int = 0
-	for {
+	sendIndex := 0
+	for sendIndex < len(buf) {
 		sendLength, err := c.Conn.Write(buf[sendIndex:])
 		if err != nil {
 			return err
 		}
 
 		sendIndex += sendLength
-
-		if sendLength >= len(buf) {
-			return nil
-		}
 	}
+	return nil
 }
 
-func (c *client) ReadMessageInto(buf []byte) (int, error) {
-	var header [4]byte
-	_, err := c.Conn.Read(header[:])
-	if err != nil {
-		return 0, err
-	}
-
-	length := int(header[0])
-	length |= int(header[1]) << 8
-	length |= int(header[2]) << 16
-	length |= int(header[3]) << 24
-
+// readPacket 소켓에서 인자로 입력받은 buf에 꽉 찰때까지 계속 읽습니다.
+func (c *client) readPacketInto(buf []byte) error {
 	readLength := 0
-
-	for readLength < length {
-		l, err := c.Conn.Read(buf[:length])
+	for readLength < len(buf) {
+		l, err := c.Conn.Read(buf[readLength:])
 		if err != nil {
-			if err == io.EOF {
-				return 0, errors.New("packet body read fail")
-			}
-			return 0, err
+			return err
 		}
 		readLength += l
 	}
+	return nil
+}
+
+// ReadMessageInto (int32 + byte array) 형식의 패킷을 읽습니다.
+// 일단 int32를 읽고 그 길이만큼 byte array를 읽습니다.
+// 구조 상 첫번째로 읽는 int32는 못읽고 연결이 끊어질 수 있지만
+// 두번째로 읽는 byte array는 반드시 읽어야합니다.
+func (c *client) ReadMessageInto(buf []byte) (int, error) {
+	if err := c.readPacketInto(buf[:4]); err != nil {
+		if err == io.EOF {
+			return 0, err
+		}
+		return 0, errorPacketHeaderReadFail
+	}
+
+	length := int(buf[0])
+	length |= int(buf[1]) << 8
+	length |= int(buf[2]) << 16
+	length |= int(buf[3]) << 24
+
+	if err := c.readPacketInto(buf[:length]); err != nil {
+		return 0, errorPacketBodyReadFail
+	}
+
 	return length, nil
 }
