@@ -32,12 +32,9 @@ func defaultRecover() {
 
 var uniqueID uint32 = 0
 
-func (s *chatServer) callCallback(cb func(c clientMessage), c *client, data []byte) {
+func (s *chatServer) callCallback(cb func(m clientMessage), m clientMessage) {
 	defer defaultRecover()
-	cb(clientMessage{
-		Client:  c,
-		Receive: data,
-	})
+	cb(m)
 }
 
 func (s *chatServer) registerClient(c *client) {
@@ -52,16 +49,9 @@ func (s *chatServer) unRegisterClient(c *client) {
 	s.lock.Unlock()
 }
 
-func (s *chatServer) onAccept(clientSocket net.Conn) {
+func (s *chatServer) onAccept(c *client) {
 	var buf [8094]byte
-	clientID := atomic.AddUint32(&uniqueID, 1)
-
-	c := client{
-		Conn:     clientSocket,
-		ClientID: clientID,
-	}
-
-	s.registerClient(&c)
+	s.registerClient(c)
 
 	for {
 		l, err := c.ReadMessageInto(buf[:])
@@ -74,13 +64,15 @@ func (s *chatServer) onAccept(clientSocket net.Conn) {
 
 		cb := s.OnReceive
 		if cb != nil {
-			s.callCallback(cb, &c, buf[:l])
+			s.callCallback(cb, clientMessage{
+				Client:  c,
+				Receive: buf[:l],
+			})
 		}
 	}
 
-	s.unRegisterClient(&c)
-
-	clientSocket.Close()
+	s.unRegisterClient(c)
+	c.Conn.Close()
 }
 
 func (s *chatServer) Range(run func(c *client)) {
@@ -110,6 +102,13 @@ func (s *chatServer) Serve() {
 		if err != nil {
 			log.Panic("tcp open error")
 		}
-		go s.onAccept(clientSocket)
+
+		clientID := atomic.AddUint32(&uniqueID, 1)
+
+		c := client{
+			Conn:     clientSocket,
+			ClientID: clientID,
+		}
+		go s.onAccept(&c)
 	}
 }
