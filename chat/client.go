@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"net"
+	"sync/atomic"
 )
 
 var errorPacketBodyReadFail = errors.New("packet body read fail")
@@ -12,6 +13,19 @@ var errorPacketHeaderReadFail = errors.New("packet header read fail")
 type client struct {
 	ClientID uint32
 	Conn     net.Conn
+	UserData interface{}
+}
+
+var uniqueID uint32 = 0
+
+// newClient 새로운 클라이언트를 만듭니다.
+// clientID는 유니크하게 증가합니다
+func newClient(conn net.Conn) *client {
+	clientID := atomic.AddUint32(&uniqueID, 1)
+	return &client{
+		Conn:     conn,
+		ClientID: clientID,
+	}
 }
 
 // WriteMessage write int32 + ByteArray

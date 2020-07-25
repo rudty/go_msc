@@ -5,16 +5,17 @@ import (
 	"log"
 	"net"
 	"sync"
-	"sync/atomic"
 )
 
 type chatServer struct {
-	lock      sync.RWMutex
-	clients   map[uint32]*client
-	OnReceive func(c clientMessage)
+	lock        sync.RWMutex
+	clients     map[uint32]*client
+	OnConnected func(c *client)
+	OnReceive   func(c request)
+	OnClosed    func(c *client)
 }
 
-type clientMessage struct {
+type request struct {
 	Client  *client
 	Receive []byte
 }
@@ -30,9 +31,7 @@ func defaultRecover() {
 	recover()
 }
 
-var uniqueID uint32 = 0
-
-func (s *chatServer) callCallback(cb func(m clientMessage), m clientMessage) {
+func (s *chatServer) callCallback(cb func(m request), m request) {
 	defer defaultRecover()
 	cb(m)
 }
@@ -49,10 +48,8 @@ func (s *chatServer) unRegisterClient(c *client) {
 	s.lock.Unlock()
 }
 
-func (s *chatServer) onAccept(c *client) {
+func (s *chatServer) receiveFromClient(c *client) {
 	var buf [8094]byte
-	s.registerClient(c)
-
 	for {
 		l, err := c.ReadMessageInto(buf[:])
 		if err != nil {
@@ -64,15 +61,36 @@ func (s *chatServer) onAccept(c *client) {
 
 		cb := s.OnReceive
 		if cb != nil {
-			s.callCallback(cb, clientMessage{
+			s.callCallback(cb, request{
 				Client:  c,
 				Receive: buf[:l],
 			})
 		}
 	}
+}
 
+func (s *chatServer) onAccept(c *client) {
+	s.registerClient(c)
+	onConnectedCallback := s.OnConnected
+	if onConnectedCallback != nil {
+		onConnectedCallback(c)
+	}
+
+	s.receiveFromClient(c)
+
+	onClosedCallback := s.OnClosed
+	if onClosedCallback != nil {
+		onClosedCallback(c)
+	}
 	s.unRegisterClient(c)
 	c.Conn.Close()
+}
+
+func (s *chatServer) FindClient(clientID uint32) (c *client, ok bool) {
+	s.lock.Lock()
+	c, ok = s.clients[clientID]
+	s.lock.Unlock()
+	return
 }
 
 func (s *chatServer) Range(run func(c *client)) {
@@ -100,15 +118,11 @@ func (s *chatServer) Serve() {
 	for {
 		clientSocket, err := serverSocket.Accept()
 		if err != nil {
-			log.Panic("tcp open error")
+			log.Println("client connect error: ", err)
+			continue
 		}
 
-		clientID := atomic.AddUint32(&uniqueID, 1)
-
-		c := client{
-			Conn:     clientSocket,
-			ClientID: clientID,
-		}
-		go s.onAccept(&c)
+		c := newClient(clientSocket)
+		go s.onAccept(c)
 	}
 }

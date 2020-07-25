@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"strconv"
@@ -11,7 +12,13 @@ import (
 
 func main() {
 	s := newChatServer()
-	s.OnReceive = func(m clientMessage) {
+	s.OnConnected = func(c *client) {
+		fmt.Println(fmt.Sprintf("hello %d", c.ClientID))
+	}
+	s.OnClosed = func(c *client) {
+		fmt.Println(fmt.Sprintf("bye %d", c.ClientID))
+	}
+	s.OnReceive = func(m request) {
 		s.Range(func(c *client) {
 			c.WriteMessage(m.Receive)
 		})
