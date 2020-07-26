@@ -93,6 +93,10 @@ func (s *chatServer) FindClient(clientID uint32) (c *client, ok bool) {
 	return
 }
 
+func (s *chatServer) disconnectClient(c *client) {
+	c.Conn.Close()
+}
+
 func (s *chatServer) Range(run func(c *client)) {
 	s.lock.Lock()
 	w := sync.WaitGroup{}

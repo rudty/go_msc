@@ -22,6 +22,8 @@ func main() {
 		s.Range(func(c *client) {
 			c.WriteMessage(m.Receive)
 		})
+		time.Sleep(1 * time.Second)
+		s.disconnectClient(m.Client)
 	}
 	go s.Serve()
 	time.Sleep(500 * time.Millisecond)
