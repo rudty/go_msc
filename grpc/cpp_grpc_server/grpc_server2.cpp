@@ -98,17 +98,7 @@ public:
     virtual void onRelease() = 0;
 };
 
-template<typename _Request, typename _Response, typename _MyBase>
-class AbstractRequest: public MessageRpcRequest<_Request, _Response> {
-    _MyBase* onClone() override {
-        return new _MyBase(service_, cq_);
-    }
-    void onRelease() override {
-        delete this;
-    }
-};
-
-class SayHelloRequest: public AbstractRequest<HelloRequest, HelloReply, SayHelloRequest> {
+class SayHelloRequest: public MessageRpcRequest<HelloRequest, HelloReply> {
     Greeter::AsyncService* service_;
     ServerCompletionQueue* cq_;
 public:
@@ -125,6 +115,14 @@ public:
         std::string prefix("Hello ");
         res->set_message(prefix + req->name());
         std::cout << "dd" << " " << GetCurrentThreadId() << std::endl;
+    }
+
+    SayHelloRequest* onClone() override {
+        return new SayHelloRequest(service_, cq_);
+    }
+
+    void onRelease() override {
+        delete this;
     }
 };
 
